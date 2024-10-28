@@ -68,13 +68,13 @@ conda clean -a -y
 
 ```
 conda activate dguafas
-python test_model.py --model-name=DGUA_FAS --path=./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar
+python test_model.py --model-name=DGUA_FAS --path="./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar"
 conda deactivate
 conda activate gacdfas
-python test_model.py --model-name=GACD_FAS --path=./pretrained_models/GACD_FAS/resnet18_pICM2O_best.pth
+python test_model.py --model-name=GACD_FAS --path="./pretrained_models/GACD_FAS/resnet18_pICM2O_best.pth"
 conda deactivate
 conda activate jpdfas
-python test_model.py --model-name=JPD_FAS --path=./pretrained_models/JPD_FAS/full_resnet50.pth
+python test_model.py --model-name=JPD_FAS --path="./pretrained_models/JPD_FAS/full_resnet50.pth"
 conda deactivate
 
 ```
