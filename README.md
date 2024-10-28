@@ -63,3 +63,19 @@ cd ../..
 conda clean -a -y
 
 ```
+
+### Test all the models: 
+
+```
+conda activate dguafas;
+python test_model.py DGUA_FAS ./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar
+
+
+conda activate gacdfas;
+python test_model.py GACD_FAS ./pretrained_models/GACD_FAS/resnet18_pICM2O_best.pth
+
+
+conda activate jpdfas;
+python test_model.py JPD_FAS ./pretrained_models/JPD_FAS/full_resnet50.pth
+
+```

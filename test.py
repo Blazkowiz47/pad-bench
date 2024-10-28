@@ -12,4 +12,6 @@ for model, path in pretrained_models.items():
     conda activate {env};
     python test_model.py {model} {path}    
     """
+    print(script)
+    continue
     os.system(script)
