@@ -4,7 +4,7 @@
 ### Install Instructions
 
 `
-
+conda activate base
 cd ./models/DGUA_FAS/
 cd ./ml-cvnets
 # git clone https://github.com/apple/ml-cvnets
