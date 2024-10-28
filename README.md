@@ -5,6 +5,11 @@
 
 ```
 conda activate base
+
+conda remove -n dguafas --all -y
+conda remove -n gacdfas --all -y
+conda remove -n jpdfas --all -y
+
 cd ./models/DGUA_FAS/
 cd ./ml-cvnets
 # git clone https://github.com/apple/ml-cvnets
