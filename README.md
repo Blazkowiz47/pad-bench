@@ -67,15 +67,14 @@ conda clean -a -y
 ### Test all the models: 
 
 ```
-conda activate dguafas;
+conda activate dguafas
 python test_model.py --model-name=DGUA_FAS --path=./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar
-
-
-conda activate gacdfas;
+conda deactivate
+conda activate gacdfas
 python test_model.py --model-name=GACD_FAS --path=./pretrained_models/GACD_FAS/resnet18_pICM2O_best.pth
-
-
-conda activate jpdfas;
+conda deactivate
+conda activate jpdfas
 python test_model.py --model-name=JPD_FAS --path=./pretrained_models/JPD_FAS/full_resnet50.pth
+conda deactivate
 
 ```
