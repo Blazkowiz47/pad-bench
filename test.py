@@ -1,5 +1,4 @@
-from models import get_model
-from util.logger import get_logger
+import os
 
 pretrained_models = {
     "DGUA_FAS": "./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar",
@@ -7,12 +6,10 @@ pretrained_models = {
     "JPD_FAS": "./pretrained_models/JPD_FAS/full_resnet50.pth",
 }
 
-log = get_logger("./logs/test.log")
-model_name = "JPD_FAS"
-
-get_model(
-    model_name,
-    {"arch": "resnet50"},
-    log,
-    path=pretrained_models[model_name],
-)
+for model, path in pretrained_models.items():
+    env = model.lower().replace("_", "")
+    script: str = f"""
+    conda activate {env};
+    python test_model.py {model} {path}    
+    """
+    os.system(script)

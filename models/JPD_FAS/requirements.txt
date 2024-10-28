@@ -1,7 +1,6 @@
 torch
 albumentations
 numpy
-opencv-python
 elasticdeform==0.5.0
 tqdm
 joblib
@@ -10,3 +9,4 @@ insightface
 einops
 timm==0.6.12
 thop
+opencv-python

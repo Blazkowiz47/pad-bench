@@ -6,8 +6,9 @@ cd ./ml-cvnets
 # git checkout 84d992f413e52c0468f86d23196efd9dad885e6f
 # cp ../base_cls.py ./cvnets/models/classification/base_cls.py
 
-conda init
 conda create -n dguafas python==3.9.12 -y
+conda init
+. ~/.bashrc
 conda activate dguafas 
      
 pip install -r requirements.txt
