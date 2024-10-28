@@ -4,13 +4,10 @@ from utils import Wrapper
 
 
 def get_dataset(dataset: str, config: Dict[str, Any], log: Logger, **kwargs) -> Wrapper:
+    if dataset == "standard":
+        from cdatasets.fas_ds_wrapper import FAS_DS_Wrapper
 
-
-    if dataset == "oulu_npu":
-        from cdatasets.oulu_npu import Oulu_npuWrapper
-
-        return Oulu_npuWrapper(config, log, **kwargs)
-
+        return FAS_DS_Wrapper(config, log, **kwargs)
 
     ### Donot remove this line as the build generator uses this as a marker
     ### while adding new dataset.
