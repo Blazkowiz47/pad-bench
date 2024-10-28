@@ -15,7 +15,7 @@ def driver(model_name: str, path: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("model_name")
-    parser.add_argument("path")
+    parser.add_argument("--model-name", type=str)
+    parser.add_argument("--path", type=str)
     args = parser.parse_args()
     driver(args.model_name, args.path)
