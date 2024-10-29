@@ -28,6 +28,9 @@ conda create -n gacdfas python==3.6.12 -y
 conda activate gacdfas 
 conda install pytorch==1.10.1 torchvision==0.11.2 torchaudio==0.10.1 -c pytorch -y
 pip install easydict
+pip install tqdm 
+pip install pyyaml
+pip install opencv-python
 conda deactivate
 conda info -e
 cd ../..

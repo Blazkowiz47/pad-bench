@@ -1,15 +1,14 @@
+import glob
+import os
 from logging import Logger
 from pathlib import Path
-import os
-import glob
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
-import cv2
 import numpy as np
-from PIL import Image
 import torch
-from torch.utils.data import DataLoader
-from util import DatasetGenerator, Wrapper, image_extensions
+from PIL import Image
+
+from util import Wrapper, image_extensions
 
 
 class StandardWrapper(Wrapper):
@@ -93,9 +92,8 @@ class StandardWrapper(Wrapper):
         if self.transform:
             imgarray = self.transform(fname)
         else:
-            img = Image.open(fname)
+            img = Image.open(fname).resize((224, 224))
             imgarray = np.array(img)
-            imgarray = cv2.resize(imgarray, [224, 224])
 
         if to_augment:
             imgarray = self.augment(imgarray)
