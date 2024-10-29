@@ -1,6 +1,6 @@
 opencv-python==4.5.5.64
 albumentations==1.0.3
-numpy==1.8
+numpy==1.26.4
 elasticdeform==0.5.0
 tqdm
 joblib
