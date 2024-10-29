@@ -9,9 +9,6 @@ pretrained_models = {
 for model, path in pretrained_models.items():
     env = model.lower().replace("_", "")
     script: str = f"""
-    conda activate {env};
-    python test_model.py {model} {path}    
+    conda init && conda activate {env} && python test_model.py {model} {path};    
     """
-    print(script)
-    continue
     os.system(script)

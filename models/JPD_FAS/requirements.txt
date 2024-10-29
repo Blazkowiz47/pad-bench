@@ -1,5 +1,5 @@
-torch
-albumentations
+opencv-python==4.5.5.64
+albumentations==1.0.3
 numpy
 elasticdeform==0.5.0
 tqdm
@@ -9,4 +9,3 @@ insightface
 einops
 timm==0.6.12
 thop
-opencv-python

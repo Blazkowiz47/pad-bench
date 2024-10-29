@@ -46,16 +46,11 @@ conda info -e
 cd ../..
 
 cd ./models/JPD_FAS/
-conda create -n jpdfas python==3.9.12 -y
-conda init
-. ~/.bashrc
+conda create -n jpdfas python -y
 conda activate jpdfas 
-
-pip install einops
+conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=12.1 -c pytorch -c nvidia -y
 pip install -r requirements.txt
-
 conda deactivate
-
 conda info -e
 
 cd ../..
