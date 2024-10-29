@@ -43,13 +43,13 @@ class StandardWrapper(Wrapper):
                     str(file)
                     for file in Path(
                         os.path.join(self.rdir, cid, self.attack_type, ssplit)
-                    ).glob("*")
+                    ).rglob("*")
                     if file.suffix.lower() in image_extensions
                 ]
             else:
                 datapoints = [
                     str(file)
-                    for file in Path(os.path.join(self.rdir, cid, ssplit)).glob("*")
+                    for file in Path(os.path.join(self.rdir, cid, ssplit)).rglob("*")
                     if file.suffix.lower() in image_extensions
                 ]
             for point in datapoints:
