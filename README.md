@@ -45,7 +45,7 @@ cd ../..
 cd ./models/JPD_FAS/
 conda create -n jpdfas -y
 conda activate jpdfas 
-conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=12.1 -c pytorch -c nvidia -y
+conda install pytorch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 -c pytorch -y
 pip install -r requirements.txt
 
 conda init
