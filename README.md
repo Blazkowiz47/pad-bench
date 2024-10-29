@@ -32,11 +32,8 @@ cd ../..
 
 cd ./models/GACD_FAS/
 conda create -n gacdfas python==3.6.12 -y
-conda init
-. ~/.bashrc
 conda activate gacdfas 
-
-pip install torch==1.10.1+cu111 torchvision==0.11.2+cu111 torchaudio==0.10.1 -f https://download.pytorch.org/whl/cu111/torch_stable.html
+conda install pytorch==1.10.1 torchvision==0.11.2 torchaudio==0.10.1 -c pytorch -y
 pip install easydict
 
 conda deactivate
@@ -46,11 +43,13 @@ conda info -e
 cd ../..
 
 cd ./models/JPD_FAS/
-conda create -n jpdfas python -y
+conda create -n jpdfas -y
 conda activate jpdfas 
 conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=12.1 -c pytorch -c nvidia -y
 pip install -r requirements.txt
-conda deactivate
+
+conda init
+onda deactivate
 conda info -e
 
 cd ../..
