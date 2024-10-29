@@ -1,3 +1,4 @@
 *.pyc
 pretrained_models/*
 logs/*
+tmp/*
