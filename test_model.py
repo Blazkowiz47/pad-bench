@@ -18,8 +18,10 @@ def driver(model_name: str, path: str) -> None:
 
     img_path = "/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/bonafide/test/00201_0.jpg"
     x = transform_image(img_path)
+    x = x.unsqueeze(0).cuda()
     print(x.shape)
     _, y = model(x)
+    #     y = model(x)
     pred = F.softmax(y, dim=1)[:, 0]
     for prob in pred.detach().cpu().numpy():
         print(prob.item())

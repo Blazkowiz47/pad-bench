@@ -1,14 +1,14 @@
 from logging import Logger
 from typing import Any, Dict, List
 
-import albumentations as A
-import cv2
+import numpy as np
+from PIL import Image
 import torch
 import torch.nn.functional as F
 from torch.nn import Module
 from torch.utils.data import DataLoader
+import torchvision.transforms as T
 
-from .cv2_transform import transforms
 from .nets import get_model as models
 from .nets import load_pretrain
 
@@ -55,19 +55,17 @@ def get_scores(data_loader: DataLoader, model: Module) -> Dict[str, List[float]]
 
 
 def transform_image(fname: str) -> torch.Tensor:
-    transform1 = transforms.Compose([
-        transforms.Resize((256, 256)),
-        transforms.CenterCrop(224),
-        transforms.ColorTrans(mode=0),  # BGR to RGB
-    ])
-    transform2 = A.Compose([
-        A.Normalize(
+    transform = T.Compose([
+        T.Resize((256, 256)),
+        T.ToTensor(),
+        T.Normalize(
             mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
         ),  # RGB [0,255] input, RGB normalize output
-        A.pytorch.ToTensorV2(),
     ])
-    img = cv2.imread(fname)
-    return transform2(transform1(img))
+
+    img = Image.open(fname)
+
+    return transform(img)
 
 
 __all__ = ["get_model", "get_scores", "transform_image"]

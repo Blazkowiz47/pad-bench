@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List
 
 import cvnets
 from PIL import Image
@@ -34,10 +34,8 @@ def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
     return net
 
 
-def get_scores(
-    data_loader: DataLoader, model: Module
-) -> Dict[Literal["attack"] | Literal["real"], List[float]]:
-    result: Dict[Literal["attack"] | Literal["real"], List[float]] = {}
+def get_scores(data_loader: DataLoader, model: Module) -> Dict[str, List[float]]:
+    result: Dict[str, List[float]] = {}
 
     model.eval()
     model.cuda()

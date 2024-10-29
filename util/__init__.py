@@ -8,6 +8,7 @@ from .common_functions import (
     video_extensions,
 )
 from .logger import get_logger
+from .metrics import calculate_eer
 
 __all__ = [
     "DatasetGenerator",
@@ -18,4 +19,5 @@ __all__ = [
     "set_seeds",
     "video_extensions",
     "get_logger",
+    "calculate_eer",
 ]

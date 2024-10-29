@@ -10,8 +10,8 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 
-image_extensions:List[str] = ['.jpg', '.png', '.jpeg']
-video_extensions:List[str] = ['.mov', '.mp4']
+image_extensions: List[str] = [".jpg", ".png", ".jpeg"]
+video_extensions: List[str] = [".mov", ".mp4"]
 
 
 def set_seeds(log: Logger, seed: int = 2024):
@@ -38,7 +38,7 @@ def initialise_dirs(model_name: str):
     """
     Initialises all the required directories.
     """
-    os.makedirs(f"tmp/{model_name}/checkpoints", exist_ok=True)
+    os.makedirs(model_name, exist_ok=True)
 
 
 class DatasetGenerator(Dataset):
@@ -71,7 +71,7 @@ class Wrapper:
         self.name = ""
 
     @abstractmethod
-    def loop_splitset(self, ssplit: str) -> List[Any]:
+    def loop_splitset(self, ssplit: str, to_augment: bool) -> List[Any]:
         """
         Loops through the given directory.
         Practically, one should only change this function and get various splits.
@@ -90,7 +90,7 @@ class Wrapper:
         """
         self.log.debug(f"Generating {split} split for {self.name} dataset.")
         batch_size = batch_size or self.batch_size
-        data = self.loop_splitset(split)
+        data = self.loop_splitset(split, split == "train")
         self.log.debug(f"Total files: {len(data)}")
         return DataLoader(
             DatasetGenerator(data, self.transform),

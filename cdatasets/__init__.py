@@ -26,9 +26,9 @@ def get_dataset(dataset: str, config: Dict[str, Any], log: Logger, **kwargs) -> 
     """
 
     if dataset == "standard":
-        from cdatasets.fas_ds_wrapper import FAS_DS_Wrapper
+        from cdatasets.standard import StandardWrapper
 
-        return FAS_DS_Wrapper(config, log, **kwargs)
+        return StandardWrapper(config, log, **kwargs)
 
     ### Donot remove this line as the build generator uses this as a marker
     ### while adding new dataset.
