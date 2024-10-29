@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 import torch
 from torch.nn import Module
 from torch.utils.data import DataLoader
@@ -31,7 +31,7 @@ def get_model(model: str, config: Dict[str, Any], log: Logger, **kwargs) -> Modu
 
 def get_score_function(
     model: str,
-) -> Callable[[DataLoader, Module], Dict[str, List[float]]]:
+) -> Callable[[DataLoader, Module, Logger, int], Dict[str, List[float]]]:
     """ """
     if model == "DGUA_FAS":
         from models.DGUA_FAS import get_scores

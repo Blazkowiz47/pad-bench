@@ -47,6 +47,11 @@ parser.add_argument(
     eg: -d datset1 
     """,
 )
+parser.add_argument(
+    "--attack",
+    default="*",
+    type=str,
+)
 
 parser.add_argument(
     "--rdir",
@@ -79,6 +84,14 @@ parser.add_argument(
     default=None,
     help="Load initial weights from partially/pretrained model.",
 )
+
+parser.add_argument(
+    "--logger-level",
+    type=str,
+    choices=["INFO", "DEBUG", "CRITICAL", "ERROR"],
+    default="INFO",
+)
+
 # You can add any additional arguments if you need here.
 
 
@@ -101,17 +114,24 @@ def main():
     model = get_model(args.model, config, log, path=args.continue_model).to(device)
     log.info(str(model))
     wrapper = get_dataset(
-        args.dataset, config, log, transform=get_transform_function(args.model)
+        args.dataset,
+        config,
+        log,
+        rdir=args.rdir,
+        transform=get_transform_function(args.model),
+        attack=args.attack,
     )
 
     get_scores = get_score_function(args.model)
     testds = wrapper.get_split("test")
 
-    result = get_scores(testds, model)
+    result = get_scores(testds, model, log)
 
     if "real" in result:
+        log.debug(f"Real scores: {len(result['real'])}")
         np.savetxt(os.path.join(evaluation_dir, "real.txt"), np.array(result["real"]))
     if "attack" in result:
+        log.debug(f"Attack scores: {len(result['attack'])}")
         np.savetxt(
             os.path.join(evaluation_dir, "attack.txt"), np.array(result["attack"])
         )

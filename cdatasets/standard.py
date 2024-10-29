@@ -1,6 +1,7 @@
 from logging import Logger
 from pathlib import Path
 import os
+import glob
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import cv2
@@ -36,16 +37,42 @@ class StandardWrapper(Wrapper):
         self.include_path = kwargs.get("include_path", False)
 
     def loop_splitset(self, ssplit: str, to_augment: bool) -> List[Any]:
+        self.log.debug(f"Looping through: {self.rdir}")
         data: List[Any] = []
         for cid_lbl, cid in enumerate(self.classes):
             if cid == "attack":
-                datapoints = [
-                    str(file)
-                    for file in Path(
-                        os.path.join(self.rdir, cid, self.attack_type, ssplit)
-                    ).rglob("*")
-                    if file.suffix.lower() in image_extensions
-                ]
+                datapoints = []
+                for ext in image_extensions:
+                    datapoints.extend(
+                        glob.glob(
+                            os.path.join(
+                                self.rdir,
+                                cid,
+                                self.attack_type,
+                                ssplit,
+                                "**",
+                                f"*{ext}",
+                            ),
+                            recursive=True,
+                        )
+                    )
+                    datapoints.extend(
+                        glob.glob(
+                            os.path.join(
+                                self.rdir,
+                                cid,
+                                self.attack_type,
+                                ssplit,
+                                "**",
+                                f"*{ext.upper()}",
+                            ),
+                            recursive=True,
+                        )
+                    )
+                self.log.debug(f"Loaded attack files: {len(datapoints)}")
+                self.log.debug(
+                    f"From: {os.path.join(self.rdir, cid, self.attack_type, ssplit)}"
+                )
             else:
                 datapoints = [
                     str(file)
@@ -54,7 +81,6 @@ class StandardWrapper(Wrapper):
                 ]
             for point in datapoints:
                 data.append((point, cid_lbl, to_augment))
-
         return data
 
     def augment(self, image: Any) -> Any:
@@ -78,7 +104,10 @@ class StandardWrapper(Wrapper):
         label = np.zeros((self.num_classes,))
         label[lbl] = 1
 
+        if not isinstance(imgarray, torch.Tensor):
+            imgarray = torch.tensor(imgarray)
+
         if self.include_path:
-            return torch.tensor(imgarray).float(), torch.tensor(label).float(), fname
+            return imgarray.float(), torch.tensor(label).float(), fname
         else:
-            return torch.tensor(imgarray).float(), torch.tensor(label).float()
+            return imgarray.float(), torch.tensor(label).float()

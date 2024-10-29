@@ -93,7 +93,7 @@ class Wrapper:
         data = self.loop_splitset(split, split == "train")
         self.log.debug(f"Total files: {len(data)}")
         return DataLoader(
-            DatasetGenerator(data, self.transform),
+            DatasetGenerator(data, self._transform),
             num_workers=num_workers or self.num_workers,
             batch_size=batch_size or self.batch_size,
         )
@@ -106,7 +106,7 @@ class Wrapper:
         raise NotImplementedError()
 
     @abstractmethod
-    def transform(self, datapoint: Iterable[Any]) -> Tuple:
+    def _transform(self, datapoint: Iterable[Any]) -> Tuple:
         """
         Transforms the given datapoint.
         """

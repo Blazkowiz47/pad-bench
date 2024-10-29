@@ -1,12 +1,12 @@
-from typing import List
+from typing import List, Union
 
 import numpy as np
 from numpy.typing import NDArray
 
 
 def calculate_eer(
-    genuine: NDArray | List[float | int],
-    imposter: NDArray | List[float | int],
+    genuine: Union[NDArray, List[Union[float, int]]],
+    imposter: Union[NDArray, List[Union[float, int]]],
     bins: int = 10_001,
 ) -> float:
     """

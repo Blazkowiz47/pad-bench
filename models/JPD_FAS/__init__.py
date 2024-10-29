@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from torch.nn import Module
 from torch.utils.data import DataLoader
 import torchvision.transforms as T
+from tqdm import tqdm
 
 from .nets import get_model as models
 from .nets import load_pretrain
@@ -31,12 +32,14 @@ def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
     return net
 
 
-def get_scores(data_loader: DataLoader, model: Module) -> Dict[str, List[float]]:
-    result: Dict[str, List[float]] = {}
+def get_scores(
+    data_loader: DataLoader, model: Module, log: Logger, position: int = 0
+) -> Dict[str, List[float]]:
+    result: Dict[str, List[float]] = {"attack": [], "real": []}
 
     model.eval()
     model.cuda()
-    for x, y in data_loader:
+    for x, y in tqdm(data_loader, position=position):
         x = x.cuda()
         y = y.numpy().tolist()
         if model._arch.startswith("mobilenet") or model._arch.startswith("shufflenet"):

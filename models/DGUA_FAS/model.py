@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from torch.nn import Module
 from torch.utils.data import DataLoader
 from torchvision import transforms as T
+from tqdm import tqdm
 
 
 from .option import get_training_arguments
@@ -34,17 +35,20 @@ def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
     return net
 
 
-def get_scores(data_loader: DataLoader, model: Module) -> Dict[str, List[float]]:
-    result: Dict[str, List[float]] = {}
+def get_scores(
+    data_loader: DataLoader, model: Module, log: Logger, position=0
+) -> Dict[str, List[float]]:
+    result: Dict[str, List[float]] = {"attack": [], "real": []}
 
     model.eval()
     model.cuda()
-    for x, y in data_loader:
+    for x, y in tqdm(data_loader, position=position):
         x = x.cuda()
-        y = y.numpy().tolist()
+        y = y.argmax(dim=1).numpy().tolist()
         cls_out = model(x, True)[0]
         pred = F.softmax(cls_out, dim=1).detach().cpu().numpy()[:, 1]
         for prob, lbl in zip(pred, y):
+            log.debug(f"{lbl} {prob}")
             if lbl:
                 result["attack"].append(prob.item())
             else:

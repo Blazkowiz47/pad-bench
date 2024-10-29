@@ -68,6 +68,6 @@ python -m DGUA_FAS --rdir="/path/to/dataset/" -ckpt "/path/to/pretrained/models"
 
 Example: 
 ```
-python -m DGUA_FAS --rdir="/cluster/nbl-users/Shreyas-Sushrut-Raghu/PAD_Survillance_DB/J7_NG/" \
+python evaluation.py -m DGUA_FAS --rdir="/cluster/nbl-users/Shreyas-Sushrut-Raghu/PAD_Survillance_DB/J7_NG/" \
 -ckpt "./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar" -edir "./tmp/DGUA_FAS/pad_surveillance/j7ng"
 ```
