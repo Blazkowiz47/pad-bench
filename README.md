@@ -12,8 +12,10 @@ conda remove -n jpdfas --all -y
 
 cd ./models/DGUA_FAS/
 cd ./ml-cvnets
+
 conda create -n dguafas python==3.9.12 -y
 conda activate dguafas 
+conda install pytorch torchvision torchaudio cudatoolkit=11.1 -c pytorch-lts -c nvidia -y
 pip install -r requirements.txt
 pip install --editable .
 pip install pandas

@@ -42,7 +42,7 @@ def eval_all_indian_pads() -> None:
             for protocol, ckpt in MODELS_CHECKPOINTS[model].items():
                 for attack in attacks:
                     edir = os.path.join(
-                        ".tmp/", model, protocol, "indian_pad", iphone, attack
+                        "./tmp/", model, protocol, "indian_pad", iphone, attack
                     )
                     if not os.path.isdir(os.path.join(rdir, "attack", attack)):
                         continue
