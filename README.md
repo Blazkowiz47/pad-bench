@@ -15,11 +15,12 @@ cd ./ml-cvnets
 
 conda create -n dguafas python==3.9.12 -y
 conda activate dguafas 
-conda install pytorch torchvision torchaudio cudatoolkit=11.1 -c pytorch-lts -c nvidia -y
+conda install pytorch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0 -c pytorch -y
 pip install -r requirements.txt
 pip install --editable .
 pip install pandas
 pip install tensorboard
+pip install onnxscript
 conda deactivate
 cd ..
 conda info -e
