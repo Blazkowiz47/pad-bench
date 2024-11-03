@@ -10,9 +10,6 @@ import numpy as np
 import yaml
 
 from cdatasets import get_dataset
-
-# Incase you use wandb uncomment following line
-# import wandb
 from models import get_model, get_score_function, get_transform_function
 from util import calculate_eer, initialise_dirs, logger
 
@@ -123,22 +120,28 @@ def main():
     )
 
     get_scores = get_score_function(args.model)
-    testds = wrapper.get_split("test")
+    for ssplit in ["test", "train"]:
+        splitds = wrapper.get_split(ssplit)
+        log.info(f"Evaluating {ssplit} split")
 
-    result = get_scores(testds, model, log)
+        result = get_scores(splitds, model, log)
 
-    if "real" in result:
-        log.debug(f"Real scores: {len(result['real'])}")
-        np.savetxt(os.path.join(evaluation_dir, "real.txt"), np.array(result["real"]))
-    if "attack" in result:
-        log.debug(f"Attack scores: {len(result['attack'])}")
-        np.savetxt(
-            os.path.join(evaluation_dir, "attack.txt"), np.array(result["attack"])
-        )
+        if "real" in result:
+            log.debug(f"Real scores: {len(result['real'])}")
+            np.savetxt(
+                os.path.join(evaluation_dir, f"{ssplit}_real.txt"),
+                np.array(result["real"]),
+            )
+        if "attack" in result:
+            log.debug(f"Attack scores: {len(result['attack'])}")
+            np.savetxt(
+                os.path.join(evaluation_dir, f"{ssplit}_attack.txt"),
+                np.array(result["attack"]),
+            )
 
-    if "real" in result and "attack" in result:
-        eer = calculate_eer(result["real"], result["attack"])
-        log.info(f"D-EER: {eer:.4f}")
+        if "real" in result and "attack" in result:
+            eer = calculate_eer(result["real"], result["attack"])
+            log.info(f"D-EER ({ssplit}): {eer:.4f}")
 
 
 if __name__ == "__main__":

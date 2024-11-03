@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  dgua_fas:
+    build:
+      dockerfile: models/DGUA_FAS/Dockerfile
+    volumes:
+      - .:/usr/src/code
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+  gacd_fas:
+    build:
+      dockerfile: models/GACD_FAS/Dockerfile
+    volumes:
+      - .:/usr/src/code
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
