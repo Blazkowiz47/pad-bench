@@ -15,12 +15,13 @@ cd ./ml-cvnets
 
 conda create -n dguafas python==3.9.12 -y
 conda activate dguafas 
-conda install pytorch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0 -c pytorch -y
+conda install pytorch==1.11.0 torchvision==0.12.0 torchaudio==0.11.0 cudatoolkit=11.3 -c pytorch -y
 pip install -r requirements.txt
 pip install --editable .
 pip install pandas
 pip install tensorboard
 pip install onnxscript
+pip install --force-reinstall -v "numpy==1.25.2"
 conda deactivate
 cd ..
 conda info -e
@@ -29,7 +30,7 @@ cd ../..
 cd ./models/GACD_FAS/
 conda create -n gacdfas python==3.6.12 -y
 conda activate gacdfas 
-conda install pytorch==1.10.1 torchvision==0.11.2 torchaudio==0.10.1 -c pytorch -y
+conda install pytorch==1.10.1 torchvision==0.11.2 torchaudio==0.10.1 cudatoolkit=11.3 -c pytorch -c conda-forge -y
 pip install easydict
 pip install tqdm 
 pip install pyyaml
@@ -41,7 +42,7 @@ cd ../..
 cd ./models/JPD_FAS/
 conda create -n jpdfas -y
 conda activate jpdfas 
-conda install pytorch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 -c pytorch -y
+conda install pytorch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 pytorch-cuda=11.8 -c pytorch -c nvidia -y
 pip install -r requirements.txt
 conda install numpy==1.26.4 -y
 onda deactivate

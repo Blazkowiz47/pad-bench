@@ -28,7 +28,7 @@ def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
 
     log.debug("Initialised DGUA_FAS Model")
     if kwargs.get("path", ""):
-        net_ = torch.load(kwargs["path"], weights_only=False)
+        net_ = torch.load(kwargs["path"])
         net.load_state_dict(net_["state_dict"])
         log.debug("Loaded weights of DGUA_FAS Model")
 

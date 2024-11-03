@@ -16,7 +16,7 @@ def driver(model_name: str, path: str) -> None:
     )
     model.cuda().eval()
 
-    img_path = "/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/bonafide/test/00201_0.jpg"
+    img_path = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/FaceMoprhingDatabases/cleaned_datasets/feret/digital/bonafide/test/00201_0.jpg"
     x = transform_image(img_path)
     x = x.unsqueeze(0).cuda()
     print(x.shape)
