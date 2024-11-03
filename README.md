@@ -4,6 +4,7 @@
 ### Install Instructions
 
 ```
+ln -s /mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/pad-bench/pretrained_models /home/ubuntu/pad-bench/pretrained_models
 conda activate base
 
 conda remove -n dguafas --all -y
