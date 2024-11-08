@@ -89,6 +89,12 @@ parser.add_argument(
     default="INFO",
 )
 
+parser.add_argument(
+    "--epochs",
+    default=100,
+    type=int,
+)
+
 # You can add any additional arguments if you need here.
 
 

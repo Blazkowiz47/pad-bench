@@ -15,7 +15,7 @@ from .resnet import Resnet18
 def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
     log.debug("Initalising GACD_FAS Model")
     log.debug(f"Provided config: {config}")
-    net = Resnet18()
+    net = Resnet18(n_classes=config.get("n_classes", 1))
 
     log.debug("Initialised GACD_FAS Model")
 
@@ -39,9 +39,9 @@ def get_scores(
     model.cuda()
     for x, y in tqdm(data_loader, position=position):
         x = x.cuda()
-        y = y.numpy().tolist()
+        y = y.argmax(dim=1).numpy().tolist()
         cls_out = model(x)
-        pred = F.softmax(cls_out, dim=1).detach().cpu().numpy()
+        pred = cls_out[:, 0].detach().cpu().numpy()
         for prob, lbl in zip(pred, y):
             if lbl:
                 result["attack"].append(prob.item())
@@ -52,11 +52,13 @@ def get_scores(
 
 
 def transform_image(fname: str) -> torch.Tensor:
-    transform = T.Compose([
-        T.Resize((256, 256)),
-        T.ToTensor(),
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    transform = T.Compose(
+        [
+            T.Resize((256, 256)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
 
     img = Image.open(fname)
     return transform(img)

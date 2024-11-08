@@ -46,9 +46,25 @@ conda activate jpdfas
 conda install pytorch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 pytorch-cuda=11.8 -c pytorch -c nvidia -y
 pip install -r requirements.txt
 conda install numpy==1.26.4 -y
-onda deactivate
+conda deactivate
 conda info -e
 cd ../..
+
+cd ./models/CF_FAS/
+conda create -n cffas -y 
+conda activate cffas
+conda install pytorch==2.5.0 torchvision==0.20.0 torchaudio==2.5.0 pytorch-cuda=12.4 -c pytorch -c nvidia -y
+pip install albumentations
+conda install tqdm -y 
+conda deactivate 
+conda info -e
+cd ../..
+
+cd ./models/LMFD_FAS/
+conda create -n lmfdfas --clone cffas -y 
+conda activate lmfdfas
+cd ../..
+
 
 conda clean -a -y
 ```

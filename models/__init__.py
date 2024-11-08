@@ -1,5 +1,6 @@
 from logging import Logger
 from typing import Any, Callable, Dict, List, Optional
+
 import torch
 from torch.nn import Module
 from torch.utils.data import DataLoader
@@ -21,6 +22,16 @@ def get_model(model: str, config: Dict[str, Any], log: Logger, **kwargs) -> Modu
 
     if model == "JPD_FAS":
         from models.JPD_FAS import get_model
+
+        return get_model(config, log, **kwargs)
+
+    if model == "CF_FAS":
+        from models.CF_FAS import get_model
+
+        return get_model(config, log, **kwargs)
+
+    if model == "LMFD_FAS":
+        from models.LMFD_FAS import get_model
 
         return get_model(config, log, **kwargs)
 
@@ -48,6 +59,16 @@ def get_score_function(
 
         return get_scores
 
+    if model == "CF_FAS":
+        from models.CF_FAS import get_scores
+
+        return get_scores
+
+    if model == "LMFD_FAS":
+        from models.LMFD_FAS import get_scores
+
+        return get_scores
+
     ### Donot remove this line as the build generator uses this as a marker
     ### while adding new model.
     raise NotImplementedError(f"Get score function in: {model} not present")
@@ -69,6 +90,16 @@ def get_transform_function(
 
     if model == "JPD_FAS":
         from models.JPD_FAS import transform_image
+
+        return transform_image
+
+    if model == "CF_FAS":
+        from models.CF_FAS import transform_image
+
+        return transform_image
+
+    if model == "LMFD_FAS":
+        from models.LMFD_FAS import transform_image
 
         return transform_image
 

@@ -29,57 +29,54 @@ class StandardWrapper(Wrapper):
         self.classes = ["attack", "real"]
         self.num_classes = len(self.classes)
         self.attack_type = kwargs.get("attack", "*")
-
+        self.facedetect = config.get("facedetect", None)
         self.batch_size = config["batch_size"]
         self.num_workers = config["num_workers"]
         self.transform = kwargs.get("transform", None)
         self.include_path = kwargs.get("include_path", False)
+        self.log.debug(f"Attack: {self.attack_type}")
 
     def loop_splitset(self, ssplit: str, to_augment: bool) -> List[Any]:
         self.log.debug(f"Looping through: {self.rdir}")
         data: List[Any] = []
-        for cid_lbl, cid in enumerate(self.classes):
-            if cid == "attack":
-                datapoints = []
-                for ext in image_extensions:
-                    datapoints.extend(
-                        glob.glob(
-                            os.path.join(
-                                self.rdir,
-                                cid,
-                                self.attack_type,
-                                ssplit,
-                                "**",
-                                f"*{ext}",
-                            ),
-                            recursive=True,
-                        )
-                    )
-                    datapoints.extend(
-                        glob.glob(
-                            os.path.join(
-                                self.rdir,
-                                cid,
-                                self.attack_type,
-                                ssplit,
-                                "**",
-                                f"*{ext.upper()}",
-                            ),
-                            recursive=True,
-                        )
-                    )
-                self.log.debug(f"Loaded attack files: {len(datapoints)}")
-                self.log.debug(
-                    f"From: {os.path.join(self.rdir, cid, self.attack_type, ssplit)}"
-                )
-            else:
-                datapoints = [
-                    str(file)
-                    for file in Path(os.path.join(self.rdir, cid, ssplit)).rglob("*")
-                    if file.suffix.lower() in image_extensions
-                ]
-            for point in datapoints:
-                data.append((point, cid_lbl, to_augment))
+        attack_dir = os.path.join(
+            self.rdir,
+            "attack",
+            self.attack_type,
+            ssplit,
+        )
+        real_dir = os.path.join(
+            self.rdir,
+            "real",
+            ssplit,
+        )
+        if self.facedetect:
+            if os.path.isdir(os.path.join(attack_dir, self.facedetect)):
+                attack_dir = os.path.join(attack_dir, self.facedetect)
+            if os.path.isdir(os.path.join(real_dir, self.facedetect)):
+                real_dir = os.path.join(real_dir, self.facedetect)
+
+        datapoints = [
+            str(file)
+            for file in Path(attack_dir).glob("*")
+            if file.suffix.lower() in image_extensions
+        ]
+
+        for point in datapoints:
+            data.append((point, 1, to_augment))
+        self.log.debug(f"Loaded attack files: {len(datapoints)}")
+        self.log.debug(f"From: {attack_dir}")
+
+        datapoints = [
+            str(file)
+            for file in Path(real_dir).glob("*")
+            if file.suffix.lower() in image_extensions
+        ]
+
+        self.log.debug(f"Loaded real files: {len(datapoints)}")
+        self.log.debug(f"From: {real_dir}")
+        for point in datapoints:
+            data.append((point, 0, to_augment))
         return data
 
     def augment(self, image: Any) -> Any:

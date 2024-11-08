@@ -1,17 +1,28 @@
 from logging import Logger
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import cvnets
 from PIL import Image
 import torch
 import torch.nn.functional as F
-from torch.nn import Module
+from torch.nn import Module, Loss
 from torch.utils.data import DataLoader
+from torch.optim import Optimizer
 from torchvision import transforms as T
 from tqdm import tqdm
 
 
 from .option import get_training_arguments
+
+
+def finetune_loop(
+    model: Module,
+    inputs: Tuple[Any],
+    target: torch.Tensor,
+    optimizer: Optimizer,
+    loss_fn: Loss,
+) -> torch.Tensor:
+    loss_fn()
 
 
 def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
@@ -48,7 +59,6 @@ def get_scores(
         cls_out = model(x, True)[0]
         pred = F.softmax(cls_out, dim=1).detach().cpu().numpy()[:, 1]
         for prob, lbl in zip(pred, y):
-            log.debug(f"{lbl} {prob}")
             if lbl:
                 result["attack"].append(prob.item())
             else:
@@ -58,9 +68,11 @@ def get_scores(
 
 
 def transform_image(fname: str) -> torch.Tensor:
-    transform = T.Compose([
-        T.ToTensor(),
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    transform = T.Compose(
+        [
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
     img = Image.open(fname).resize((256, 256))
     return transform(img)
