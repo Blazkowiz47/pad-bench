@@ -5,7 +5,7 @@ import cvnets
 from PIL import Image
 import torch
 import torch.nn.functional as F
-from torch.nn import Module, Loss
+from torch.nn import Module
 from torch.utils.data import DataLoader
 from torch.optim import Optimizer
 from torchvision import transforms as T
@@ -15,14 +15,26 @@ from tqdm import tqdm
 from .option import get_training_arguments
 
 
-def finetune_loop(
+def finetune_epoch(
     model: Module,
-    inputs: Tuple[Any],
-    target: torch.Tensor,
+    dataset: DataLoader,
     optimizer: Optimizer,
-    loss_fn: Loss,
-) -> torch.Tensor:
-    loss_fn()
+    loss_fn: Module,
+    log: Logger,
+    device: str,
+) -> Tuple[float, float]:
+    """
+    Returns epoch-loss and accuracy
+    """
+
+    for images, labels in tqdm(dataset, leave=True, position=1):
+        images, labels = images.to(device), labels.to(device)
+        output = model(images)
+        log.debug(f"Output of model: {output.shape}")
+        log.debug(f"Label of model: {output.shape}")
+        exit()
+
+        loss_fn()
 
 
 def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:

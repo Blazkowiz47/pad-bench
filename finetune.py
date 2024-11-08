@@ -7,10 +7,18 @@ import argparse
 import os
 
 import numpy as np
+from torch.nn import CrossEntropyLoss
+from torch.optim import SGD
+from tqdm import tqdm
 import yaml
 
 from cdatasets import get_dataset
-from models import get_model, get_score_function, get_transform_function
+from models import (
+    get_model,
+    get_score_function,
+    get_transform_function,
+    get_finetune_epoch_step,
+)
 from util import calculate_eer, initialise_dirs, logger
 
 parser = argparse.ArgumentParser(
@@ -46,14 +54,14 @@ parser.add_argument(
 )
 parser.add_argument(
     "--attack",
-    default="*",
+    default="soft_plastic",
     type=str,
 )
 
 parser.add_argument(
     "--rdir",
     type=str,
-    default="/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/",
+    default="/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/iPhone11/Data_Split/",
     help="""
     Root directory of the dataset
     """,
@@ -70,7 +78,7 @@ parser.add_argument(
     "-ckpt",
     "--continue-model",
     type=str,
-    default=None,
+    default="./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar",
     help="Load initial weights from partially/pretrained model.",
 )
 
@@ -78,7 +86,7 @@ parser.add_argument(
     "-edir",
     "--evaluation-dir",
     type=str,
-    default=None,
+    default="./tmp/DGUA_FAS/icmo/finetune/indian_pad/iPhone11/soft_plastic",
     help="Load initial weights from partially/pretrained model.",
 )
 
@@ -86,7 +94,7 @@ parser.add_argument(
     "--logger-level",
     type=str,
     choices=["INFO", "DEBUG", "CRITICAL", "ERROR"],
-    default="INFO",
+    default="DEBUG",
 )
 
 parser.add_argument(
@@ -130,29 +138,39 @@ def main():
         attack=args.attack,
     )
 
+    fine_tune_epoch_caller = get_finetune_epoch_step(args.model)
     get_scores = get_score_function(args.model)
-    for ssplit in ["test", "train"]:
-        splitds = wrapper.get_split(ssplit)
-        log.info(f"Evaluating {ssplit} split")
+    model.train()
+    optimizer = SGD(
+        [p for p in model.parameters() if p.requires_grad],
+        float(config.get("lr", 1e-4)),
+    )
+    loss_fn = CrossEntropyLoss().to(device)
 
-        result = get_scores(splitds, model, log)
+    for epoch in tqdm(range(args.epochs), position=0):
+        trainds = wrapper.get_split(
+            "train",
+        )
+        testds = wrapper.get_split("test")
+        log.info(f"Finetuning epoch {epoch}:")
+        fine_tune_epoch_caller(model, trainds, optimizer, loss_fn, log, device)
 
-        if "real" in result:
-            log.debug(f"Real scores: {len(result['real'])}")
-            np.savetxt(
-                os.path.join(evaluation_dir, f"{ssplit}_real.txt"),
-                np.array(result["real"]),
-            )
-        if "attack" in result:
-            log.debug(f"Attack scores: {len(result['attack'])}")
-            np.savetxt(
-                os.path.join(evaluation_dir, f"{ssplit}_attack.txt"),
-                np.array(result["attack"]),
-            )
-
+        result = get_scores(testds, model, log)
+        #         if "real" in result:
+        #             log.debug(f"Real scores: {len(result['real'])}")
+        #             np.savetxt(
+        #                 os.path.join(evaluation_dir, f"{ssplit}_real.txt"),
+        #                 np.array(result["real"]),
+        #             )
+        #         if "attack" in result:
+        #             log.debug(f"Attack scores: {len(result['attack'])}")
+        #             np.savetxt(
+        #                 os.path.join(evaluation_dir, f"{ssplit}_attack.txt"),
+        #                 np.array(result["attack"]),
+        #             )
         if "real" in result and "attack" in result:
             eer = calculate_eer(result["real"], result["attack"])
-            log.info(f"D-EER ({ssplit}): {eer:.4f}")
+            log.info(f"D-EER for epoch {epoch}: {eer:.4f}")
 
 
 if __name__ == "__main__":
