@@ -32,6 +32,7 @@ MODELS_CHECKPOINTS = {
 
 ATTACKS = [
     "display",
+    "print",
     "hard_plastic",
     "latex_mask",
     "paper_mask",

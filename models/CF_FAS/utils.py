@@ -7,11 +7,12 @@ from torch.autograd import Variable
 import sklearn
 from sklearn import metrics
 from sklearn.metrics import roc_curve, auc
-#import pdb
+
+# import pdb
 from collections import defaultdict
 
-class AvgrageMeter(object):
 
+class AvgrageMeter(object):
     def __init__(self):
         self.reset()
 
@@ -36,12 +37,12 @@ class AvgrageMeter(object):
         res = []
         for k in topk:
             correct_k = correct[:k].view(-1).float().sum(0)
-            res.append(correct_k.mul_(100.0/batch_size))
+            res.append(correct_k.mul_(100.0 / batch_size))
         return res
 
 
 def get_eer_threhold_cross_db(fpr, tpr, threshold):
-    differ_tpr_fpr_1=tpr+fpr-1.0
+    differ_tpr_fpr_1 = tpr + fpr - 1.0
 
     right_index = np.nanargmin(np.abs(differ_tpr_fpr_1))
     best_th = threshold[right_index]
@@ -51,31 +52,38 @@ def get_eer_threhold_cross_db(fpr, tpr, threshold):
 
 
 def performances_cross_db(prediction_scores, gt_labels, pos_label=1, verbose=True):
-
-    data = [{'map_score': score, 'label': label} for score, label in zip(prediction_scores, gt_labels)]
+    data = [
+        {"map_score": score, "label": label}
+        for score, label in zip(prediction_scores, gt_labels)
+    ]
     fpr, tpr, threshold = roc_curve(gt_labels, prediction_scores, pos_label=pos_label)
 
     val_eer, val_threshold, right_index = get_eer_threhold_cross_db(fpr, tpr, threshold)
     test_auc = auc(fpr, tpr)
 
-    FRR = 1 - tpr    # FRR = 1 - TPR
-    HTER = (fpr+FRR)/2.0    # error recognition rate &  reject recognition rate
+    FRR = 1 - tpr  # FRR = 1 - TPR
+    HTER = (fpr + FRR) / 2.0  # error recognition rate &  reject recognition rate
 
     if verbose is True:
-        print(f'AUC@ROC is {test_auc}, HTER is {HTER[right_index]}, APCER: {fpr[right_index]}, BPCER: {FRR[right_index]}, EER is {val_eer}, TH is {val_threshold}')
+        print(
+            f"AUC@ROC is {test_auc}, HTER is {HTER[right_index]}, APCER: {fpr[right_index]}, BPCER: {FRR[right_index]}, EER is {val_eer}, TH is {val_threshold}"
+        )
 
-    return test_auc, fpr[right_index], FRR[right_index], HTER[right_index]
+    return test_auc, fpr[right_index], FRR[right_index], HTER[right_index], val_eer
 
 
 def evalute_threshold_based(prediction_scores, gt_labels, threshold):
-    data = [{'map_score': score, 'label': label} for score, label in zip(prediction_scores, gt_labels)]
-    num_real = len([s for s in data if s['label'] == 1])
-    num_fake = len([s for s in data if s['label'] == 0])
+    data = [
+        {"map_score": score, "label": label}
+        for score, label in zip(prediction_scores, gt_labels)
+    ]
+    num_real = len([s for s in data if s["label"] == 1])
+    num_fake = len([s for s in data if s["label"] == 0])
 
-    type1 = len([s for s in data if s['map_score'] <= threshold and s['label'] == 1])
-    type2 = len([s for s in data if s['map_score'] > threshold and s['label'] == 0])
+    type1 = len([s for s in data if s["map_score"] <= threshold and s["label"] == 1])
+    type2 = len([s for s in data if s["map_score"] > threshold and s["label"] == 0])
 
-    #test_threshold_ACC = 1-(type1 + type2) / count
+    # test_threshold_ACC = 1-(type1 + type2) / count
     test_threshold_APCER = type2 / num_fake
     test_threshold_BPCER = type1 / num_real
     test_threshold_ACER = (test_threshold_APCER + test_threshold_BPCER) / 2.0
@@ -85,6 +93,7 @@ def evalute_threshold_based(prediction_scores, gt_labels, threshold):
 
 def compute_video_score(video_ids, predictions, labels):
     import csv
+
     predictions_dict, labels_dict = defaultdict(list), defaultdict(list)
 
     for i in range(len(video_ids)):

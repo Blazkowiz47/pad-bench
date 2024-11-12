@@ -1,6 +1,3 @@
-
-
-
 ### Install Instructions
 
 ```
@@ -56,6 +53,7 @@ conda activate cffas
 conda install pytorch==2.5.0 torchvision==0.20.0 torchaudio==2.5.0 pytorch-cuda=12.4 -c pytorch -c nvidia -y
 pip install albumentations
 conda install tqdm -y 
+conda install -c conda-forge scikit-learn -y 
 conda deactivate 
 conda info -e
 cd ../..
