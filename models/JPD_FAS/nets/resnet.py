@@ -308,7 +308,7 @@ def _resnet(
     block: Type[Union[BasicBlock, Bottleneck]],
     layers: List[int],
     pretrained: bool,
-    progress: bool,
+    progress: bool = True,
     **kwargs: Any,
 ) -> ResNet:
     model = ResNet(block, layers, **kwargs)
