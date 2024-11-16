@@ -185,8 +185,8 @@ class StandardWrapper:
             data.append((point, 0))
 
         class_counts = {0: len(datapoints)}
-        self.log.debug(f"Loaded attack files: {len(datapoints)}")
-        self.log.debug(f"From: {attack_dir}")
+        print(f"Loaded attack files: {len(datapoints)}")
+        print(f"From: {attack_dir}")
 
         datapoints = [
             str(file)
@@ -195,8 +195,8 @@ class StandardWrapper:
         ]
 
         class_counts = {1: len(datapoints)}
-        self.log.debug(f"Loaded real files: {len(datapoints)}")
-        self.log.debug(f"From: {real_dir}")
+        print(f"Loaded real files: {len(datapoints)}")
+        print(f"From: {real_dir}")
 
         for point in datapoints:
             data.append((point, 1))

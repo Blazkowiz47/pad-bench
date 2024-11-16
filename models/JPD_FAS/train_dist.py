@@ -61,7 +61,7 @@ parser.add_argument(
 parser.add_argument(
     "--imbalanced_sampler",
     action="store_true",
-    default=False,
+    default=True,
     help="add imbalanced dataset sampler",
 )
 
@@ -216,6 +216,8 @@ def main(args):
     log = logging.getLogger(os.path.join(edir, "train.txt"))
     os.makedirs(os.path.join(edir, "checkpoints"), exist_ok=True)
     args.saved_model_dir = os.path.join(edir, "checkpoints")
+    if os.listdir(args.saved_model_dir):
+        return
 
     world_size = torch.distributed.get_world_size()
     rank = torch.distributed.get_rank()
@@ -256,18 +258,16 @@ def main(args):
         np.random.seed(seed_value + worker_id)
 
     # train dataset
-    wrapper = StandardWrapper({}, log, rdir=args.rdir, attack=args.attack)
+    wrapper = StandardWrapper(
+        {"facedetect": "Face_Detect"}, log, rdir=args.rdir, attack=args.attack
+    )
     train_dataset = wrapper.get_split("train")
-
     logging.info("train_dataset:{}".format(len(train_dataset)))
 
-    if args.imbalanced_sampler:
-        logging.info("with imbalanced sampler")
-        train_sampler = DistributedSamplerWrapper(
-            BalanceClassSampler(train_dataset, mode="upsampling")
-        )
-    else:
-        train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+    logging.info("with imbalanced sampler")
+    train_sampler = DistributedSamplerWrapper(
+        BalanceClassSampler(train_dataset, mode="downsampling")
+    )
 
     train_loader = DataLoaderX(
         local_rank=int(os.environ["LOCAL_RANK"]),

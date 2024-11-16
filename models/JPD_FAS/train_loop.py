@@ -12,12 +12,13 @@ ATTACKS = [
 ]
 
 if __name__ == "__main__":
-    for iphone in ["iPhone12", "iPhone11"]:
-        for attack in ATTACKS:
+    args = []
+    port = 12345
+    for iphone in ["iPhone11", "iPhone12"]:
+        for attack in reversed(ATTACKS):
             rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/{iphone}/Data_Split/"
             edir = f"../../tmp/JPD_FAS/{iphone}/{attack}"
-            os.system(
-                f"python -m torch.distributed.run --nproc_per_node=1 --master_port=12353 \
+            cmd = f"python -m torch.distributed.run --nproc_per_node=1 --master_port={port} \
                   train_dist.py \
                   --attack {attack} \
                   --rdir {rdir} \
@@ -42,4 +43,5 @@ if __name__ == "__main__":
                   --save_freq 1 \
                   --saved_model_dir '{edir}' \
                 "
-            )
+            port += 1
+            os.system(cmd)

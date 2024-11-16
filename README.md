@@ -60,7 +60,11 @@ conda info -e
 cd ../..
 
 cd ./models/LMFD_FAS/
-conda create -n lmfdfas --clone cffas -y 
+conda create -n lmfdfas -y
+conda install pytorch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1 pytorch-cuda=12.1 -c pytorch -c nvidia -y
+conda install -c conda-forge scikit-learn -y 
+conda install albumentations -c albumentations -y
+conda install pandas tqdm -y
 conda activate lmfdfas
 cd ../..
 

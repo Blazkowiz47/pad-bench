@@ -12,6 +12,7 @@ from datasets.CvprDataset_P22 import CvprDataset_P22
 import numpy as np
 from typing import Iterator, List, Optional, Union
 
+
 class BalanceClassSampler(Sampler):
     """Abstraction over data sampler.
     Allows you to create stratified sample on unbalanced classes.
@@ -31,10 +32,8 @@ class BalanceClassSampler(Sampler):
         labels = [self._get_label(dataset, idx) for idx in self.indices]
 
         labels = np.array(labels)
-        samples_per_class = {
-            label: (labels == label).sum() for label in set(labels)
-        }
-        logging.info('samples_per_class: %s', samples_per_class)
+        samples_per_class = {label: (labels == label).sum() for label in set(labels)}
+        logging.info("samples_per_class: %s", samples_per_class)
 
         self.lbl2idx = {
             label: np.arange(len(labels))[labels == label].tolist()
@@ -46,9 +45,7 @@ class BalanceClassSampler(Sampler):
 
         if isinstance(mode, int) or mode == "upsampling":
             samples_per_class = (
-                mode
-                if isinstance(mode, int)
-                else max(samples_per_class.values())
+                mode if isinstance(mode, int) else max(samples_per_class.values())
             )
         else:
             samples_per_class = min(samples_per_class.values())
@@ -71,8 +68,9 @@ class BalanceClassSampler(Sampler):
         elif isinstance(dataset, CvprDataset_P22):
             return int(dataset.items[idx][1])
         else:
+            img, lbl = dataset[idx]
+            return int(lbl)
             raise NotImplementedError
-
 
     def __iter__(self) -> Iterator[int]:
         """
@@ -103,9 +101,7 @@ class BalanceMultiClassSampler(Sampler):
     Allows you to create stratified sample on unbalanced classes.
     """
 
-    def __init__(
-        self, dataset, num_classes, mode: Union[str, int] = "upsampling"
-    ):
+    def __init__(self, dataset, num_classes, mode: Union[str, int] = "upsampling"):
         """
         Args:
             labels (List[int]): list of class label
@@ -129,7 +125,7 @@ class BalanceMultiClassSampler(Sampler):
                     self.lbl2idx[label_idx].append(idx)
 
         logging.info(samples_per_class)
-        '''
+        """
         samples_per_class = {
             label: (labels == label).sum() for label in labels
         }
@@ -138,23 +134,21 @@ class BalanceMultiClassSampler(Sampler):
             label: np.arange(len(labels))[labels == label].tolist()
             for label in set(labels)
         }
-        '''
+        """
 
         if isinstance(mode, str):
             assert mode in ["downsampling", "upsampling"]
 
         if isinstance(mode, int) or mode == "upsampling":
             samples_per_class = (
-                mode
-                if isinstance(mode, int)
-                else max(samples_per_class.values())
+                mode if isinstance(mode, int) else max(samples_per_class.values())
             )
         else:
             samples_per_class = min(samples_per_class.values())
 
         self.labels = labels
         self.samples_per_class = samples_per_class
-        self.length = self.samples_per_class * num_classes#len(set(labels))
+        self.length = self.samples_per_class * num_classes  # len(set(labels))
 
     def _get_label(self, dataset, idx):
         if isinstance(dataset, torchvision.datasets.MNIST):
@@ -165,7 +159,6 @@ class BalanceMultiClassSampler(Sampler):
             return dataset.dataset.imgs[idx][1]
         else:
             raise NotImplementedError
-
 
     def __iter__(self) -> Iterator[int]:
         """
@@ -198,15 +191,18 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
         num_samples (int, optional): number of samples to draw
         callback_get_label func: a callback-like function which takes two arguments - dataset and index
     """
-    def __init__(self, dataset, indices=None, num_samples=None, callback_get_label=None):
-        # if indices is not provided, 
+
+    def __init__(
+        self, dataset, indices=None, num_samples=None, callback_get_label=None
+    ):
+        # if indices is not provided,
         # all elements in the dataset will be considered
         self.indices = list(range(len(dataset))) if indices is None else indices
 
         # define custom callback
         self.callback_get_label = callback_get_label
 
-        # if num_samples is not provided, 
+        # if num_samples is not provided,
         # draw `len(indices)` samples in each iteration
         self.num_samples = len(self.indices) if num_samples is None else num_samples
 
@@ -220,7 +216,9 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
                 label_to_count[label] = 1
 
         # weight for each sample
-        weights = [1.0 / label_to_count[self._get_label(dataset, idx)] for idx in self.indices]
+        weights = [
+            1.0 / label_to_count[self._get_label(dataset, idx)] for idx in self.indices
+        ]
         self.weights = torch.DoubleTensor(weights)
 
     def _get_label(self, dataset, idx):
@@ -236,7 +234,10 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
             raise NotImplementedError
 
     def __iter__(self):
-        return (self.indices[i] for i in torch.multinomial(self.weights, self.num_samples, replacement=True))
+        return (
+            self.indices[i]
+            for i in torch.multinomial(self.weights, self.num_samples, replacement=True)
+        )
 
     def __len__(self):
         return self.num_samples
@@ -244,6 +245,7 @@ class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
 
 class DatasetFromSampler(Dataset):
     """Dataset of indexes from `Sampler`."""
+
     def __init__(self, sampler: Sampler):
         self.sampler = sampler
         self.sampler_list = None
@@ -256,13 +258,24 @@ class DatasetFromSampler(Dataset):
     def __len__(self) -> int:
         return len(self.sampler)
 
+
 class DistributedSamplerWrapper(DistributedSampler):
-    def __init__(self, sampler, num_replicas: Optional[int] = None, rank: Optional[int] = None, shuffle: bool = True,):
-        super(DistributedSamplerWrapper, self).__init__(DatasetFromSampler(sampler), num_replicas=num_replicas, rank=rank, shuffle=shuffle,)
+    def __init__(
+        self,
+        sampler,
+        num_replicas: Optional[int] = None,
+        rank: Optional[int] = None,
+        shuffle: bool = True,
+    ):
+        super(DistributedSamplerWrapper, self).__init__(
+            DatasetFromSampler(sampler),
+            num_replicas=num_replicas,
+            rank=rank,
+            shuffle=shuffle,
+        )
         self.sampler = sampler
 
     def __iter__(self):
         self.dataset = DatasetFromSampler(self.sampler)
         indexes_of_indexes = super().__iter__()
         return iter(itemgetter(*indexes_of_indexes)(self.dataset))
-

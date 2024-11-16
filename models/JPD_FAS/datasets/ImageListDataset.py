@@ -154,28 +154,30 @@ class StandardWrapper:
             if os.path.isdir(os.path.join(real_dir, self.facedetect)):
                 real_dir = os.path.join(real_dir, self.facedetect)
 
-        datapoints = [
+        attackfiles = [
             str(file)
             for file in Path(attack_dir).glob("*")
             if file.suffix.lower() in image_extensions
         ]
 
-        for point in datapoints:
-            data.append((point, 0))
-
-        self.log.debug(f"Loaded attack files: {len(datapoints)}")
+        self.log.debug(f"Loaded attack files: {len(attackfiles)}")
         self.log.debug(f"From: {attack_dir}")
 
-        datapoints = [
+        realfiles = [
             str(file)
             for file in Path(real_dir).glob("*")
             if file.suffix.lower() in image_extensions
         ]
 
-        self.log.debug(f"Loaded real files: {len(datapoints)}")
+        self.log.debug(f"Loaded real files: {len(realfiles)}")
         self.log.debug(f"From: {real_dir}")
 
-        for point in datapoints:
+        balance = min(len(attackfiles), len(realfiles))
+
+        for point in attackfiles:
+            data.append((point, 0))
+
+        for point in realfiles:
             data.append((point, 1))
 
         return data

@@ -42,7 +42,9 @@ def save_checkpoint(save_path, epoch, model, loss, lr_scheduler, optimizer):
 
 def run_training(log_file, args):
     log = getLogger()
-    wrapper = StandardWrapper({}, log, rdir=args.rdir, attack=attack)
+    wrapper = StandardWrapper(
+        {"facedetect": "Face_Detect"}, log, rdir=args.rdir, attack=attack
+    )
     train_loader = wrapper.get_split(
         "train",
         batch_size=args.batch_size,
@@ -310,12 +312,14 @@ if __name__ == "__main__":
     # training_csv = '/data/mfang/FacePAD_DB/WholeFrames/CropFaceFrames/Protocols/casia.csv'
     # test_csv = '/data/mfang/FacePAD_DB/WholeFrames/CropFaceFrames/Protocols/replayattack.csv'
     for iphone in ["iPhone12", "iPhone11"]:
-        for attack in ATTACKS:
+        for attack in reversed(ATTACKS):
             rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/{iphone}/Data_Split"
             edir = f"../../tmp/CF_FAS/{iphone}/{attack}"
             logging_filename = os.path.join(edir, "train.txt")
-            if not os.path.isdir(edir):
-                os.makedirs(edir, exist_ok=True)
+            if os.path.isdir(edir):
+                continue
+
+            os.makedirs(edir, exist_ok=True)
 
             log_file = open(logging_filename, "a")
             args.rdir = rdir
