@@ -1,3 +1,5 @@
+from enum import Enum
+
 from .common_functions import (
     DatasetGenerator,
     Wrapper,
@@ -10,6 +12,15 @@ from .common_functions import (
 from .logger import get_logger
 from .metrics import calculate_eer
 
+
+class SOTA(Enum):
+    CF_FAS = "CF_FAS"
+    DGUA_FAS = "DGUA_FAS"
+    GACD_FAS = "GACD_FAS"
+    JPD_FAS = "JPD_FAS"
+    LMFD_FAS = "LMFD_FAS"
+
+
 __all__ = [
     "DatasetGenerator",
     "Wrapper",
@@ -20,4 +31,5 @@ __all__ = [
     "video_extensions",
     "get_logger",
     "calculate_eer",
+    "SOTA",
 ]

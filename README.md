@@ -20,6 +20,7 @@ pip install pandas
 pip install tensorboard
 pip install onnxscript
 pip install --force-reinstall -v "numpy==1.25.2"
+pip install fvcore
 conda deactivate
 cd ..
 conda info -e
@@ -33,6 +34,7 @@ pip install easydict
 pip install tqdm 
 pip install pyyaml
 pip install opencv-python
+pip install fvcore
 conda deactivate
 conda info -e
 cd ../..
@@ -44,6 +46,7 @@ conda install pytorch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 pytorch-cuda=
 pip install -r requirements.txt
 conda install numpy==1.26.4 -y
 conda install termcolor -y
+pip install fvcore
 conda deactivate
 conda info -e
 cd ../..
@@ -55,6 +58,7 @@ conda install pytorch==2.5.0 torchvision==0.20.0 torchaudio==2.5.0 pytorch-cuda=
 pip install albumentations
 conda install tqdm -y 
 conda install -c conda-forge scikit-learn -y 
+pip install fvcore
 conda deactivate 
 conda info -e
 cd ../..
@@ -65,6 +69,7 @@ conda install pytorch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1 pytorch-cuda=
 conda install -c conda-forge scikit-learn -y 
 conda install albumentations -c albumentations -y
 conda install pandas tqdm -y
+pip install fvcore
 conda activate lmfdfas
 cd ../..
 

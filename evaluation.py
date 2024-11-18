@@ -11,7 +11,7 @@ import yaml
 
 from cdatasets import get_dataset
 from models import get_model, get_score_function, get_transform_function
-from util import calculate_eer, initialise_dirs, logger
+from util import calculate_eer, initialise_dirs, logger, SOTA
 
 parser = argparse.ArgumentParser(
     description="Evaluation Config",
@@ -23,6 +23,7 @@ parser.add_argument(
     "--model",
     default="DGUA_FAS",
     type=str,
+    choices=[sota.name for sota in SOTA],
     help="Model name.",
 )
 
@@ -109,8 +110,8 @@ def main():
     device = "cuda"  # You can change this to cpu.
     if "resnet18_pOMI2C_best" in args.continue_model:
         config["n_classes"] = 2
-
-    model = get_model(args.model, config, log, path=args.continue_model).to(device)
+    sota = SOTA(args.model)
+    model = get_model(sota, config, log, path=args.continue_model).to(device)
     log.info(str(model))
     if "iPhone" in args.rdir:
         config["facedetect"] = "Face_Detect"
@@ -120,11 +121,11 @@ def main():
         config,
         log,
         rdir=args.rdir,
-        transform=get_transform_function(args.model),
+        transform=get_transform_function(sota),
         attack=args.attack,
     )
 
-    get_scores = get_score_function(args.model)
+    get_scores = get_score_function(sota)
     for ssplit in ["test", "train"]:
         splitds = wrapper.get_split(ssplit)
         log.info(f"Evaluating {ssplit} split")

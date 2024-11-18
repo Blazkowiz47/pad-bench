@@ -19,7 +19,7 @@ from models import (
     get_transform_function,
     get_finetune_epoch_step,
 )
-from util import calculate_eer, initialise_dirs, logger
+from util import SOTA, calculate_eer, initialise_dirs, logger
 
 parser = argparse.ArgumentParser(
     description="Evaluation Config",
@@ -123,8 +123,8 @@ def main():
     device = "cuda"  # You can change this to cpu.
     if "resnet18_pOMI2C_best" in args.continue_model:
         config["n_classes"] = 2
-
-    model = get_model(args.model, config, log, path=args.continue_model).to(device)
+    sota = SOTA(args.model)
+    model = get_model(sota, config, log, path=args.continue_model).to(device)
     log.info(str(model))
     if "iPhone" in args.rdir:
         config["facedetect"] = "Face_Detect"
@@ -134,12 +134,12 @@ def main():
         config,
         log,
         rdir=args.rdir,
-        transform=get_transform_function(args.model),
+        transform=get_transform_function(sota),
         attack=args.attack,
     )
 
-    fine_tune_epoch_caller = get_finetune_epoch_step(args.model)
-    get_scores = get_score_function(args.model)
+    fine_tune_epoch_caller = get_finetune_epoch_step(sota)
+    get_scores = get_score_function(sota)
     model.train()
     optimizer = SGD(
         [p for p in model.parameters() if p.requires_grad],

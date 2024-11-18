@@ -120,8 +120,9 @@ def tbiom_2d_exp() -> None:
     rdir: dataset root directory path
     """
     args: List[str] = []
-    for sota in ["JPD_FAS", "CF_FAS", "LMFD_FAS"]:
-        for trained_on_iphone in ["iPhone11", "iPhone12"]:
+    #     for sota in ["JPD_FAS", "CF_FAS", "LMFD_FAS"]:
+    for sota in ["LMFD_FAS"]:
+        for trained_on_iphone in ["iPhone12", "iPhone11"]:
             for trained_on_attack in ATTACKS:
                 for iphone in ["iPhone11", "iPhone12"]:
                     rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/{iphone}/Data_Split/"
@@ -133,6 +134,10 @@ def tbiom_2d_exp() -> None:
                         edir = os.path.join(
                             f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2dresults/{sota}/trained_on_{trained_on_iphone}_{trained_on_attack}/test_on_{iphone}_{attack}/"
                         )
+                        if os.path.isfile(
+                            os.path.join(edir, "test_attack.txt")
+                        ) and os.path.isfile(os.path.join(edir, "test_real.txt")):
+                            continue
 
                         if not os.path.isdir(os.path.join(rdir, "attack", attack)):
                             continue
@@ -151,7 +156,7 @@ def tbiom_2d_exp() -> None:
                         call = f"{source_call}; conda activate {conda_env}; {syscall}; conda deactivate"
                         args.append(call)
 
-    with Pool(4) as p:
+    with Pool(2) as p:
         p.map(call_proc, args)
 
 
@@ -163,11 +168,11 @@ def eval_all_indian_pads() -> None:
     edir: evaluation directory path
     rdir: dataset root directory path
     """
-    for model in MODELS_CHECKPOINTS:
-        for protocol, ckpt in MODELS_CHECKPOINTS[model].items():
-            for iphone in ["iPhone11", "iPhone12"]:
-                rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/{iphone}/Data_Split/"
-                for attack in ATTACKS:
+    for iphone in ["iPhone11", "iPhone12"]:
+        for attack in ATTACKS:
+            for model in MODELS_CHECKPOINTS:
+                for protocol, ckpt in MODELS_CHECKPOINTS[model].items():
+                    rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/{iphone}/Data_Split/"
                     edir = os.path.join(
                         "./tmp/", model, protocol, "indian_pad", iphone, attack
                     )
@@ -196,5 +201,5 @@ def eval_all_indian_pads() -> None:
 
 
 if __name__ == "__main__":
-    # eval_all_indian_pads()
+    #     eval_all_indian_pads()
     tbiom_2d_exp()

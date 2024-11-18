@@ -2,8 +2,8 @@ import numpy
 import torch
 import torch.nn as nn
 
-from mixstyle import MixStyle
-from common import (
+from .mixstyle import MixStyle
+from .common import (
     l2_norm,
     norm_feature,
     RandomReplace,

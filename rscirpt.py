@@ -1,5 +1,11 @@
 import os
 import shutil
+from util import SOTA
+
+print([sota.name for sota in SOTA])
+print(SOTA("DGUA_FAS") == SOTA.DGUA_FAS)
+
+exit()
 
 ATTACKS = [
     "display",

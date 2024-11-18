@@ -17,7 +17,7 @@ import yaml
 
 from models import get_model
 from cdatasets import get_dataset
-from util import logger, set_seeds, initialise_dirs, get_run_name
+from util import SOTA, logger, set_seeds, initialise_dirs, get_run_name
 
 
 parser = argparse.ArgumentParser(
@@ -140,8 +140,8 @@ def main():
     )
 
     device = "cuda"  # You can change this to cpu.
-
-    model = get_model(args.model, config, log).to(device)
+    sota = SOTA(args.model)
+    model = get_model(sota, config, log).to(device)
     log.info(str(model))
     wrapper = get_dataset(args.dataset, config, log)
 
