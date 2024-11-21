@@ -21,10 +21,12 @@ image_x = torch.randn(1, 3, 224, 224).cuda()
 model = get_model(SOTA.{conda_env}, config, log).cuda().eval()
 flops = FlopCountAnalysis(model, image_x)
 total_flops = flops.total()
-print("FLOPs (G) for model: {conda_env}:", total_flops / 1_000_000_000)';
+print("FLOPs (G) for model {conda_env}:", total_flops / 1_000_000_000)
+print("Total params (1e6):", sum(p.numel() for p in model.parameters()) / 1_000_000)
+';
     conda deactivate;
     """
     output = subprocess.run(
         script, shell=True, executable="/bin/bash", capture_output=True
     )
-    print("output: ", output.stdout)
+    print(output.stdout.decode())

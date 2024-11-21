@@ -32,6 +32,12 @@ MODELS_CHECKPOINTS = {
         "ocim": "./pretrained_models/DGUA_FAS/O&C&ItoM/best_model.pth.tar",
         "ocmi": "./pretrained_models/DGUA_FAS/O&C&MtoI/best_model.pth.tar",
     },
+    "FLIP_FAS": {
+        "icmo": "./pretrained_models/FLIP_FAS/oulu_flip_mcl.pth.tar",
+        "oimc": "./pretrained_models/FLIP_FAS/casia_flip_mcl.pth.tar",
+        "ocim": "./pretrained_models/FLIP_FAS/msu_flip_mcl.pth.tar",
+        "ocmi": "./pretrained_models/FLIP_FAS/replay_flip_mcl.pth.tar",
+    },
 }
 
 ATTACKS = [
@@ -120,8 +126,8 @@ def tbiom_2d_exp() -> None:
     rdir: dataset root directory path
     """
     args: List[str] = []
-    #     for sota in ["JPD_FAS", "CF_FAS", "LMFD_FAS"]:
-    for sota in ["LMFD_FAS"]:
+    for sota in ["JPD_FAS", "CF_FAS", "LMFD_FAS"]:
+        #     for sota in ["LMFD_FAS"]:
         for trained_on_iphone in ["iPhone12", "iPhone11"]:
             for trained_on_attack in ATTACKS:
                 for iphone in ["iPhone11", "iPhone12"]:

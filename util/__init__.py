@@ -16,6 +16,7 @@ from .metrics import calculate_eer
 class SOTA(Enum):
     CF_FAS = "CF_FAS"
     DGUA_FAS = "DGUA_FAS"
+    FLIP_FAS = "FLIP_FAS"
     GACD_FAS = "GACD_FAS"
     JPD_FAS = "JPD_FAS"
     LMFD_FAS = "LMFD_FAS"

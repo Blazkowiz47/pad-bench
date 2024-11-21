@@ -5,13 +5,13 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from models import get_model, get_score_function, get_transform_function
 from util.logger import get_logger
-from util import DatasetGenerator
+from util import SOTA, DatasetGenerator
 from eval_loop import MODELS_CHECKPOINTS
 
 log = get_logger("./logs/test.log")
 
 
-def driver(model_name: str, path: str) -> None:
+def driver(model_name: SOTA, path: str) -> None:
     log.info(f"Evaluating: {model_name}")
     real_path = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/iPhone11/Data_Split/real/test/IMG_1858.JPG"
     attack_path = "/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/iPhone11/Data_Split/attack/display/test/IMG_7263_1.jpg"
@@ -37,6 +37,7 @@ def driver(model_name: str, path: str) -> None:
 
 if __name__ == "__main__":
     for model in MODELS_CHECKPOINTS:
-        if model == "GACD_FAS":
+        if model == "FLIP_FAS":
             for protocol, ckpt in MODELS_CHECKPOINTS[model].items():
-                driver(model, ckpt)
+                driver(SOTA(model), ckpt)
+                break
