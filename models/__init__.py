@@ -43,6 +43,11 @@ def get_model(model: SOTA, config: Dict[str, Any], log: Logger, **kwargs) -> Mod
 
         return get_model(config, log, **kwargs)
 
+    if model == SOTA.IADG_FAS:
+        from models.IADG_FAS import get_model
+
+        return get_model(config, log, **kwargs)
+
 
 def get_score_function(
     model: SOTA,
@@ -75,6 +80,11 @@ def get_score_function(
 
     if model == SOTA.FLIP_FAS:
         from models.FLIP_FAS import get_scores
+
+        return get_scores
+
+    if model == SOTA.IADG_FAS:
+        from models.IADG_FAS import get_scores
 
         return get_scores
 
@@ -113,6 +123,11 @@ def get_transform_function(
 
         return transform_image
 
+    if model == SOTA.IADG_FAS:
+        from models.LMFD_FAS import transform_image
+
+        return transform_image
+
 
 def get_finetune_epoch_step(
     model: SOTA,
@@ -133,32 +148,4 @@ def get_finetune_epoch_step(
 
         return finetune_epoch
 
-    # TODO:
-    if model == SOTA.GACD_FAS:
-        from models.GACD_FAS import finetune_epoch
-
-        return finetune_epoch
-
-    # TODO:
-    if model == SOTA.JPD_FAS:
-        from models.JPD_FAS import finetune_epoch
-
-        return finetune_epoch
-
-    # TODO:
-    if model == SOTA.CF_FAS:
-        from models.CF_FAS import finetune_epoch
-
-        return finetune_epoch
-
-    # TODO:
-    if model == SOTA.LMFD_FAS:
-        from models.LMFD_FAS import finetune_epoch
-
-        return finetune_epoch
-
-    # TODO:
-    if model == SOTA.FLIP_FAS:
-        from models.FLIP_FAS import finetune_epoch
-
-        return finetune_epoch
+    raise NotImplementedError(f"Not implemented: {model.name}")

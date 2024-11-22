@@ -84,10 +84,14 @@ class StandardWrapper(Wrapper):
 
     def _transform(self, datapoint: Iterable[Any]) -> Tuple:
         fname, lbl, to_augment = datapoint
+        # Initialise label
+        label = np.zeros((self.num_classes,))
+        label[lbl] = 1
 
         # Initialise image
         if self.transform:
             imgarray = self.transform(fname)
+
         else:
             img = Image.open(fname).resize((224, 224))
             imgarray = np.array(img)
@@ -95,9 +99,11 @@ class StandardWrapper(Wrapper):
         if to_augment:
             imgarray = self.augment(imgarray)
 
-        # Initialise label
-        label = np.zeros((self.num_classes,))
-        label[lbl] = 1
+        if isinstance(imgarray, tuple):
+            if self.include_path:
+                return *imgarray, torch.tensor(label).float(), fname
+            else:
+                return *imgarray, torch.tensor(label).float()
 
         if not isinstance(imgarray, torch.Tensor):
             imgarray = torch.tensor(imgarray)
