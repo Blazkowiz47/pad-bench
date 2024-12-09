@@ -124,7 +124,7 @@ def get_transform_function(
         return transform_image
 
     if model == SOTA.IADG_FAS:
-        from models.LMFD_FAS import transform_image
+        from models.IADG_FAS import transform_image
 
         return transform_image
 

@@ -7,6 +7,7 @@ from models import get_model, get_score_function, get_transform_function
 from util.logger import get_logger
 from util import SOTA, DatasetGenerator
 from eval_loop import MODELS_CHECKPOINTS
+from fvcore.nn import FlopCountAnalysis
 
 log = get_logger("./logs/test.log")
 
@@ -37,7 +38,7 @@ def driver(model_name: SOTA, path: str) -> None:
 
 if __name__ == "__main__":
     for model in MODELS_CHECKPOINTS:
-        if model == "FLIP_FAS":
+        if model == SOTA.IADG_FAS:
             for protocol, ckpt in MODELS_CHECKPOINTS[model].items():
                 driver(SOTA(model), ckpt)
                 break

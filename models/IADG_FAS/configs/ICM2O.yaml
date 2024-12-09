@@ -89,7 +89,7 @@ scheduler:
     gamma: 0.1
 
 train:
-  epochs: 50
+  epochs: 10
   batch_size: 5
   print_interval: 1
   val_interval: 1

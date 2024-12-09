@@ -132,32 +132,33 @@ def tbiom_2d_exp() -> None:
     args: List[str] = []
     for sota in [SOTA.JPD_FAS, SOTA.CF_FAS, SOTA.LMFD_FAS, SOTA.IADG_FAS]:
         #     for sota in ["LMFD_FAS"]:
+        if sota != SOTA.IADG_FAS:
+            continue
         for trained_on_iphone in ["iPhone12", "iPhone11"]:
             for trained_on_attack in ATTACKS:
                 for iphone in ["iPhone11", "iPhone12"]:
-                    rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/{iphone}/Data_Split/"
+                    rdir = f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2D_Face_Databases_PAD/{iphone}/Data_Split"
                     for attack in ATTACKS:
                         ckpt = get_checkpoint_path(
                             sota, trained_on_iphone, trained_on_attack
                         )
-                        print(ckpt)
                         edir = os.path.join(
-                            f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2dresults/{sota.name}/trained_on_{trained_on_iphone}_{trained_on_attack}/test_on_{iphone}_{attack}/"
+                            f"/mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/2dresults/{sota.name}/trained_on_{trained_on_iphone}_{trained_on_attack}/test_on_{iphone}_{attack}"
                         )
-                        if os.path.isfile(
-                            os.path.join(edir, "test_attack.txt")
-                        ) and os.path.isfile(os.path.join(edir, "test_real.txt")):
-                            continue
-
-                        if not os.path.isdir(os.path.join(rdir, "attack", attack)):
-                            continue
-                        if check_dir(edir):
-                            print("Skipping:", edir)
-                            continue
+                        #                         if os.path.isfile(
+                        #                             os.path.join(edir, "test_attack.txt")
+                        #                         ) and os.path.isfile(os.path.join(edir, "test_real.txt")):
+                        #                             continue
+                        #
+                        #                         if not os.path.isdir(os.path.join(rdir, "attack", attack)):
+                        #                             continue
+                        #                         if check_dir(edir):
+                        #                             print("Skipping:", edir)
+                        #                             continue
 
                         source_call = "source ~/miniconda3/etc/profile.d/conda.sh"
 
-                        syscall = f'python evaluation.py -m {sota} \
+                        syscall = f'python evaluation.py -m {sota.name} \
                                 -c "configs/train.yaml" -d standard \
                                 --attack={attack} --rdir={rdir} \
                                 --batch-size={BATCH_SIZE} -ckpt "{ckpt}" \
@@ -166,7 +167,7 @@ def tbiom_2d_exp() -> None:
                         call = f"{source_call}; conda activate {conda_env}; {syscall}; conda deactivate"
                         args.append(call)
 
-    with Pool(2) as p:
+    with Pool(1) as p:
         p.map(call_proc, args)
 
 
@@ -200,7 +201,7 @@ def eval_all_indian_pads() -> None:
                             -c "configs/train.yaml" -d standard \
                             --attack={attack} --rdir={rdir} \
                             --batch-size={BATCH_SIZE} -ckpt "{ckpt}" \
-                            -edir {edir}  --logger-level=DEBUG'
+                            -edir {edir}  --logger-level=ERROR'
                     conda_env = model.lower().replace("_", "")
                     subprocess.run(
                         f"{source_call}; conda activate {conda_env}; {syscall}; conda deactivate",

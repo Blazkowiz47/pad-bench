@@ -90,7 +90,50 @@ parser.add_argument(
     default="INFO",
 )
 
+
 # You can add any additional arguments if you need here.
+def only_calculate_eer():
+    """
+    Wrapper for the calculating only eer.
+    """
+    args = parser.parse_args()
+
+    evaluation_dir = args.evaluation_dir
+    initialise_dirs(evaluation_dir)
+
+    logfile = os.path.join(evaluation_dir, "eval.log")
+    log = logger.get_logger(logfile, args.logger_level)
+
+    for ssplit in ["test"]:
+        log.info(f"Evaluating {ssplit} split")
+        real = np.loadtxt(
+            os.path.join(evaluation_dir, f"{ssplit}_real.txt"),
+        )
+        attack = np.loadtxt(
+            os.path.join(evaluation_dir, f"{ssplit}_attack.txt"),
+        )
+        maxi = max(np.max(attack), np.max(real))
+        #         eer = calculate_eer(real, attack, reverse=True)
+        #         log.info(
+        #             f"D-EER {args.rdir.split('/')[-2]} {args.attack} ({ssplit}): {eer:.4f}"
+        #         )
+        attack = maxi - attack
+        real = maxi - real
+
+        np.savetxt(
+            os.path.join(evaluation_dir, f"{ssplit}_real.txt"),
+            real,
+        )
+        np.savetxt(
+            os.path.join(evaluation_dir, f"{ssplit}_attack.txt"),
+            attack,
+        )
+
+
+#         eer = calculate_eer(real, attack)
+#         log.info(
+#             f"D-EER {args.rdir.split('/')[-2]} {args.attack} ({ssplit}): {eer:.4f}"
+#         )
 
 
 def main():
@@ -126,6 +169,7 @@ def main():
     )
 
     get_scores = get_score_function(sota)
+
     for ssplit in ["test", "train"]:
         splitds = wrapper.get_split(ssplit)
         log.info(f"Evaluating {ssplit} split")
@@ -151,4 +195,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    only_calculate_eer()
+#     main()

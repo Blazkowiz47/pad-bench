@@ -7,6 +7,7 @@ def calculate_eer(
     genuine: List[Union[float, int]],
     imposter: List[Union[float, int]],
     bins: int = 10_001,
+    reverse: bool = False,
 ) -> float:
     """
 
@@ -74,16 +75,19 @@ def calculate_eer(
 
     frr = np.ones(bins)
 
-    mi = np.min(imposter)
+    mi = min(np.min(imposter), np.min(genuine))
 
-    mx = np.max(genuine)
+    mx = max(np.max(genuine), np.max(imposter))
 
     thresholds = np.linspace(mi, mx, bins)
 
     for id, threshold in enumerate(thresholds):
-        fr = np.where(genuine <= threshold)[0].shape[0]
-
-        fa = np.where(imposter >= threshold)[0].shape[0]
+        if reverse:
+            fr = np.where(genuine >= threshold)[0].shape[0]
+            fa = np.where(imposter <= threshold)[0].shape[0]
+        else:
+            fr = np.where(genuine <= threshold)[0].shape[0]
+            fa = np.where(imposter >= threshold)[0].shape[0]
 
         frr[id] = fr * 100 / genuine.shape[0]
 

@@ -202,7 +202,7 @@ def main():
             scheduler,
         )
 
-        stop = validate(
+        stop = stop or validate(
             test_pos,
             test_neg,
             model,
@@ -227,8 +227,7 @@ def main():
         if stop:
             break
 
-    if args.local_rank == 0:
-        logger.info(args)
+    logger.info(args)
 
 
 def mix_pos_neg(datas_pos, datas_neg):
@@ -496,19 +495,19 @@ def train(
             if stop:
                 break
 
-    if args.local_rank == 0:
-        print(
-            {
-                "train_Acc": train_acces.avg,
-                "train_Class1": train_losses.avg,
-                "train_Depth1": train_losses2.avg,
-                "train_Class2": train_losses3.avg,
-                "train_Depth2": train_losses4.avg,
-                "train_AIAW": train_losses5.avg,
-            },
-            epoch,
-        )
-    return stop
+    print(
+        {
+            "train_Acc": train_acces.avg,
+            "train_Class1": train_losses.avg,
+            "train_Depth1": train_losses2.avg,
+            "train_Class2": train_losses3.avg,
+            "train_Depth2": train_losses4.avg,
+            "train_AIAW": train_losses5.avg,
+        },
+        epoch,
+    )
+
+    return stop or train_acces.avg == 1.0
 
 
 def validate(
