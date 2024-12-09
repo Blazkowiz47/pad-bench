@@ -41,6 +41,10 @@ conda env create --file=environment.yml -y
 conda info -e
 cd ../..
 
+cd ./models/IADG_FAS/
+conda env create --file=environment.yml -y
+conda info -e
+cd ../..
 
 conda clean -a -y
 ```
