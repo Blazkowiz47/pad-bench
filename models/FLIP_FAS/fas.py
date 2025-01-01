@@ -9,9 +9,9 @@ import torch.nn.functional as F
 
 import timm
 
-import clip
-import third_party
-from prompt_templates import spoof_templates, real_templates
+from . import clip
+from . import third_party
+from .prompt_templates import spoof_templates, real_templates
 from collections import OrderedDict
 
 

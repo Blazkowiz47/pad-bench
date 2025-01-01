@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import cvnets
 from PIL import Image
@@ -59,7 +59,7 @@ def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
 
 
 def get_scores(
-    data_loader: DataLoader, model: Module, log: Logger, position=0
+    data_loader: DataLoader, model: Module, log: Logger, position: Optional[int] = 0
 ) -> Dict[str, List[float]]:
     result: Dict[str, List[float]] = {"attack": [], "real": []}
 

@@ -46,6 +46,18 @@ parser.add_argument(
     """,
 )
 parser.add_argument(
+    "--dataset-name",
+    default="idiap",
+    choices=[
+        "3D_mask_google",
+        "HDA_flicker_attacks",
+        "idiap",
+        "test_dataset_pro",
+        "training_pro_ibeta_level2",
+    ],
+    type=str,
+)
+parser.add_argument(
     "--attack",
     default="*",
     type=str,
@@ -54,7 +66,7 @@ parser.add_argument(
 parser.add_argument(
     "--rdir",
     type=str,
-    default="/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/",
+    default="/home/ubuntu/datasets/test",
     help="""
     Root directory of the dataset
     """,
@@ -69,7 +81,7 @@ parser.add_argument(
 
 parser.add_argument(
     "-ckpt",
-    "--continue-model",
+    "--checkpoint",
     type=str,
     default=None,
     help="Load initial weights from partially/pretrained model.",
@@ -104,30 +116,29 @@ def only_calculate_eer():
     logfile = os.path.join(evaluation_dir, "eval.log")
     log = logger.get_logger(logfile, args.logger_level)
 
-    for ssplit in ["test"]:
-        log.info(f"Evaluating {ssplit} split")
-        real = np.loadtxt(
-            os.path.join(evaluation_dir, f"{ssplit}_real.txt"),
-        )
-        attack = np.loadtxt(
-            os.path.join(evaluation_dir, f"{ssplit}_attack.txt"),
-        )
-        maxi = max(np.max(attack), np.max(real))
-        #         eer = calculate_eer(real, attack, reverse=True)
-        #         log.info(
-        #             f"D-EER {args.rdir.split('/')[-2]} {args.attack} ({ssplit}): {eer:.4f}"
-        #         )
-        attack = maxi - attack
-        real = maxi - real
+    log.info(f"Evaluating {args.dataset_name} split")
+    real = np.loadtxt(
+        os.path.join(evaluation_dir, f"{args.dataset_name}_real.txt"),
+    )
+    attack = np.loadtxt(
+        os.path.join(evaluation_dir, f"{args.dataset_name}_attack.txt"),
+    )
+    maxi = max(np.max(attack), np.max(real))
+    #         eer = calculate_eer(real, attack, reverse=True)
+    #         log.info(
+    #             f"D-EER {args.rdir.split('/')[-2]} {args.attack} ({ssplit}): {eer:.4f}"
+    #         )
+    attack = maxi - attack
+    real = maxi - real
 
-        np.savetxt(
-            os.path.join(evaluation_dir, f"{ssplit}_real.txt"),
-            real,
-        )
-        np.savetxt(
-            os.path.join(evaluation_dir, f"{ssplit}_attack.txt"),
-            attack,
-        )
+    np.savetxt(
+        os.path.join(evaluation_dir, f"{args.dataset_name}_real.txt"),
+        real,
+    )
+    np.savetxt(
+        os.path.join(evaluation_dir, f"{args.dataset_name}_attack.txt"),
+        attack,
+    )
 
 
 #         eer = calculate_eer(real, attack)
@@ -151,10 +162,11 @@ def main():
     log = logger.get_logger(logfile, args.logger_level)
 
     device = "cuda"  # You can change this to cpu.
-    if "resnet18_pOMI2C_best" in args.continue_model:
+    if "resnet18_pOMI2C_best" in args.checkpoint:
         config["n_classes"] = 2
+
     sota = SOTA(args.model)
-    model = get_model(sota, config, log, path=args.continue_model).to(device)
+    model = get_model(sota, config, log, path=args.checkpoint).to(device)
     log.info(str(model))
     if "iPhone" in args.rdir:
         config["facedetect"] = "Face_Detect"
@@ -163,37 +175,52 @@ def main():
         args.dataset,
         config,
         log,
-        rdir=args.rdir,
+        rdir=os.path.join(args.rdir, args.dataset_name),
         transform=get_transform_function(sota),
         attack=args.attack,
     )
 
     get_scores = get_score_function(sota)
 
-    for ssplit in ["test", "train"]:
-        splitds = wrapper.get_split(ssplit)
-        log.info(f"Evaluating {ssplit} split")
+    dataset = wrapper.get(num_workers=8)
 
-        result = get_scores(splitds, model, log)
+    result = get_scores(dataset, model, log)
 
-        if "real" in result:
-            log.debug(f"Real scores: {len(result['real'])}")
-            np.savetxt(
-                os.path.join(evaluation_dir, f"{ssplit}_real.txt"),
-                np.array(result["real"]),
-            )
-        if "attack" in result:
-            log.debug(f"Attack scores: {len(result['attack'])}")
-            np.savetxt(
-                os.path.join(evaluation_dir, f"{ssplit}_attack.txt"),
-                np.array(result["attack"]),
-            )
+    print(f"Evaluation of {args.dataset_name}")
+    if "real" in result:
+        print(f"Real scores: {len(result['real'])}")
+        np.savetxt(
+            os.path.join(evaluation_dir, f"{args.dataset_name}_real.txt"),
+            np.array(result["real"]),
+        )
+    if "attack" in result:
+        print(f"Attack scores: {len(result['attack'])}")
+        np.savetxt(
+            os.path.join(evaluation_dir, f"{args.dataset_name}_attack.txt"),
+            np.array(result["attack"]),
+        )
 
-        if "real" in result and "attack" in result:
-            eer = calculate_eer(result["real"], result["attack"])
-            log.info(f"D-EER ({ssplit}): {eer:.4f}")
+    if "real" in result and "attack" in result:
+        eer, far, frr, thresholds = calculate_eer(result["real"], result["attack"])
+        ida1 = np.argmin(np.abs(far - 1))
+        ida3 = np.argmin(np.abs(far - 3))
+        ida5 = np.argmin(np.abs(far - 5))
+
+        idb1 = np.argmin(np.abs(frr - 1))
+        idb3 = np.argmin(np.abs(frr - 3))
+        idb5 = np.argmin(np.abs(frr - 5))
+        print(f"D-EER: {eer:.4f}")
+        print(
+            f"BPCER (@APCER = 1%) = {frr[ida1]:.4f}@{thresholds[ida1]:.4f} APCER (@BPCER = 1%) = {far[idb1]:.4f}@{thresholds[idb1]:.4f}"
+        )
+        print(
+            f"BPCER (@APCER = 3%) = {frr[ida3]:.4f}@{thresholds[ida3]:.4f} APCER (@BPCER = 3%) = {far[idb3]:.4f}@{thresholds[idb3]:.4f}"
+        )
+        print(
+            f"BPCER (@APCER = 5%) = {frr[ida5]:.4f}@{thresholds[ida5]:.4f} APCER (@BPCER = 5%) = {far[idb5]:.4f}@{thresholds[idb5]:.4f}"
+        )
 
 
 if __name__ == "__main__":
-    only_calculate_eer()
-#     main()
+    main()
+#     only_calculate_eer()

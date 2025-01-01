@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import torch
 from torch.nn import Module
@@ -51,7 +51,7 @@ def get_model(model: SOTA, config: Dict[str, Any], log: Logger, **kwargs) -> Mod
 
 def get_score_function(
     model: SOTA,
-) -> Callable[[DataLoader, Module, Logger, int], Dict[str, List[float]]]:
+) -> Callable[[DataLoader, Module, Logger, Optional[int]], Dict[str, List[float]]]:
     """ """
     if model == SOTA.DGUA_FAS:
         from models.DGUA_FAS import get_scores

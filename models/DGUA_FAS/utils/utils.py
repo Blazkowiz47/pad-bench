@@ -1,129 +1,188 @@
 import json
+from tqdm import tqdm
+from glob import glob
 import math
+from typing import Dict, List
 import pandas as pd
 import torch
 import os
 import sys
 import shutil
 
+
 def adjust_learning_rate(optimizer, epoch, init_param_lr, lr_epoch_1, lr_epoch_2):
     i = 0
     for param_group in optimizer.param_groups:
         init_lr = init_param_lr[i]
         i += 1
-        if(epoch <= lr_epoch_1):
-            param_group['lr'] = init_lr * 0.1 ** 0
-        elif(epoch <= lr_epoch_2):
-            param_group['lr'] = init_lr * 0.1 ** 1
+        if epoch <= lr_epoch_1:
+            param_group["lr"] = init_lr * 0.1**0
+        elif epoch <= lr_epoch_2:
+            param_group["lr"] = init_lr * 0.1**1
         else:
-            param_group['lr'] = init_lr * 0.1 ** 2
+            param_group["lr"] = init_lr * 0.1**2
+
 
 import matplotlib.pyplot as plt
+
+
 def draw_roc(frr_list, far_list, roc_auc):
-    plt.switch_backend('agg')
-    plt.rcParams['figure.figsize'] = (6.0, 6.0)
-    plt.title('ROC')
+    plt.switch_backend("agg")
+    plt.rcParams["figure.figsize"] = (6.0, 6.0)
+    plt.title("ROC")
     for i, d in enumerate(frr_list):
         frr_list[i] = 1.0 - d
-    plt.plot(far_list, frr_list, 'b', label='AUC = %0.4f' % roc_auc)
-    plt.legend(loc='upper right')
-    plt.plot([0, 1], [0, 1], 'r--')
-    plt.grid(ls='--')
-    plt.ylabel('True Positive Rate')
-    plt.xlabel('False Positive Rate')
-    save_dir = './save_results/ROC/'
+    plt.plot(far_list, frr_list, "b", label="AUC = %0.4f" % roc_auc)
+    plt.legend(loc="upper right")
+    plt.plot([0, 1], [0, 1], "r--")
+    plt.grid(ls="--")
+    plt.ylabel("True Positive Rate")
+    plt.xlabel("False Positive Rate")
+    save_dir = "./save_results/ROC/"
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    plt.savefig('./save_results/ROC/ROC.png')
-    file = open('./save_results/ROC/FAR_FRR.txt', 'w')
+    plt.savefig("./save_results/ROC/ROC.png")
+    file = open("./save_results/ROC/FAR_FRR.txt", "w")
     save_json = []
     dict = {}
-    dict['FAR'] = far_list
-    dict['FRR'] = frr_list
+    dict["FAR"] = far_list
+    dict["FRR"] = frr_list
     save_json.append(dict)
     json.dump(save_json, file, indent=4)
 
+
 def sample_frames(flag, num_frames, dataset_name):
-    '''
-        from every video (frames) to sample num_frames to test
-        return: the choosen frames' path and label
-    '''
-    # The process is a litter cumbersome, you can change to your way for convenience
-    root_path = '../../data_label/' + dataset_name
-    if(flag == 0): # select the fake images
-        label_path = root_path + '/fake_label.json'
-        save_label_path = root_path + '/choose_fake_label.json'
-    elif(flag == 1): # select the real images
-        label_path = root_path + '/real_label.json'
-        save_label_path = root_path + '/choose_real_label.json'
-    else: # select all the real and fake images
-        label_path = root_path + '/all_label.json'
-        save_label_path = root_path + '/choose_all_label.json'
+    """
+    from every video (frames) to sample num_frames to test
+    return: the choosen frames' path and label
+    """
+    rdir = f"/home/ubuntu/datasets/train/{dataset_name}"
 
-    all_label_json = json.load(open(label_path, 'r'))
-    f_sample = open(save_label_path, 'w')
-    length = len(all_label_json)
-    # three componets: frame_prefix, frame_num, png
-    saved_frame_prefix = '/'.join(all_label_json[0]['photo_path'].split('/')[:-1])
-    final_json = []
-    video_number = 0
-    single_video_frame_list = []
-    single_video_frame_num = 0
-    single_video_label = 0
-    for i in range(length):
-        photo_path = all_label_json[i]['photo_path']
-        photo_label = all_label_json[i]['photo_label']
-        frame_prefix = '/'.join(photo_path.split('/')[:-1])
-        # the last frame
-        if (i == length - 1):
-            photo_frame = int(photo_path.split('/')[-1].split('.')[0])
-            single_video_frame_list.append(photo_frame)
-            single_video_frame_num += 1
-            single_video_label = photo_label
-        # a new video, so process the saved one
-        if (frame_prefix != saved_frame_prefix or i == length - 1):
-            # [1, 2, 3, 4,.....]
-            single_video_frame_list.sort()
-            frame_interval = math.floor(single_video_frame_num / num_frames)
-            for j in range(num_frames):
-                dict = {}
-                # dict['photo_path'] = saved_frame_prefix + '/' + str(
-                #     single_video_frame_list[6 + j * frame_interval]) + '.png'
-                if dataset_name not in {'cefa', 'wmca_train', 'wmca_test'}:
-                    dict['photo_path'] = saved_frame_prefix + '/' + f'{(single_video_frame_list[ j * frame_interval]):03d}' + '.png'
-                elif dataset_name == 'cefa':
-                    print(single_video_frame_list)
-                    print(saved_frame_prefix)
-                    dict['photo_path'] = saved_frame_prefix + '/' + f'{(single_video_frame_list[6 + j * frame_interval]):04d}' + '.jpg'
-                else:
-                    dict['photo_path'] = saved_frame_prefix + '/' + f'{(single_video_frame_list[j * frame_interval]):03d}' + '.jpg'
-                dict['photo_label'] = single_video_label
-                dict['photo_belong_to_video_ID'] = video_number
-                final_json.append(dict)
-            video_number += 1
-            saved_frame_prefix = frame_prefix
-            single_video_frame_list.clear()
-            single_video_frame_num = 0
-        # get every frame information
-        photo_frame = int(photo_path.split('/')[-1].split('.')[0])
-        single_video_frame_list.append(photo_frame)
-        single_video_frame_num += 1
-        single_video_label = photo_label
-    if(flag == 0):
-        print("Total video number(fake): ", video_number, dataset_name)
-    elif(flag == 1):
-        print("Total video number(real): ", video_number, dataset_name)
+    if flag == 0:
+        json_path = os.path.join(rdir, "attack_loader.json")
+        if os.path.isfile(json_path):
+            with open(json_path, "r") as fp:
+                result = json.load(fp)
+        else:
+            result: Dict[str, List[str | int]] = {
+                "photo_path": [],
+                "photo_label": [],
+                "photo_belong_to_video_ID": [],
+            }
+            for file in tqdm(
+                glob(
+                    os.path.join(rdir, "attack", "**", "*.png"),
+                    recursive=True,
+                )
+            ):
+                tail = file.split(f"{rdir}/attack/")[-1]
+                vid_id = "_".join(tail.split("_")[:-1])
+                result["photo_path"].append(file)
+                result["photo_label"].append(0)
+                result["photo_belong_to_video_ID"].append(f"{dataset_name}_" + vid_id)
+
+            with open(json_path, "w") as fp:
+                json.dump(result, fp)
+    #         ids_frames = {}
+    #         for vidid, frame in zip(result['photo_belong_to_video_ID'], result['photo_path']):
+    #             ids_frames
+
+    elif flag == 1:
+        json_path = os.path.join(rdir, "real_loader.json")
+        if os.path.isfile(json_path):
+            with open(json_path, "r") as fp:
+                result = json.load(fp)
+        else:
+            result: Dict[str, List[str | int]] = {
+                "photo_path": [],
+                "photo_label": [],
+                "photo_belong_to_video_ID": [],
+            }
+            for file in tqdm(
+                glob(
+                    os.path.join(rdir, "real", "**", "*.png"),
+                    recursive=True,
+                )
+            ):
+                tail = file.split(f"{rdir}/real/")[-1]
+                vid_id = "_".join(tail.split("_")[:-1])
+                result["photo_path"].append(file)
+                result["photo_label"].append(1)
+                result["photo_belong_to_video_ID"].append(f"{dataset_name}_" + vid_id)
+            with open(json_path, "w") as fp:
+                json.dump(result, fp)
+
     else:
-        print("Total video number(target): ", video_number, dataset_name)
-    json.dump(final_json, f_sample, indent=4)
-    f_sample.close()
+        attack_result: Dict[str, List[str | int]] = {
+            "photo_path": [],
+            "photo_label": [],
+            "photo_belong_to_video_ID": [],
+        }
 
-    f_json = open(save_label_path)
-    sample_data_pd = pd.read_json(f_json)
+        attack_json_path = os.path.join(rdir, "attack_loader.json")
+        if os.path.isfile(attack_json_path):
+            with open(attack_json_path, "r") as fp:
+                attack_result = json.load(fp)
+        else:
+            for file in tqdm(
+                glob(
+                    os.path.join(rdir, "attack", "**", "*.png"),
+                    recursive=True,
+                )
+            ):
+                tail = file.split(f"{rdir}/attack/")[-1]
+                vid_id = "_".join(tail.split("_")[:-1])
+                attack_result["photo_path"].append(file)
+                attack_result["photo_label"].append(0)
+                attack_result["photo_belong_to_video_ID"].append(
+                    f"{dataset_name}_" + vid_id
+                )
+            with open(attack_json_path, "w") as fp:
+                json.dump(attack_result, fp)
+
+        real_result: Dict[str, List[str | int]] = {
+            "photo_path": [],
+            "photo_label": [],
+            "photo_belong_to_video_ID": [],
+        }
+        real_json_path = os.path.join(rdir, "real_loader.json")
+        if os.path.isfile(real_json_path):
+            with open(real_json_path, "r") as fp:
+                real_result = json.load(fp)
+        else:
+            for file in tqdm(
+                glob(
+                    os.path.join(rdir, "real", "**", "*.png"),
+                    recursive=True,
+                )
+            ):
+                tail = file.split(f"{rdir}/real/")[-1]
+                vid_id = "_".join(tail.split("_")[:-1])
+                real_result["photo_path"].append(file)
+                real_result["photo_label"].append(1)
+                real_result["photo_belong_to_video_ID"].append(
+                    f"{dataset_name}_" + vid_id
+                )
+            with open(real_json_path, "w") as fp:
+                json.dump(real_result, fp)
+
+        result: Dict[str, List[str | int]] = {
+            "photo_path": [],
+            "photo_label": [],
+            "photo_belong_to_video_ID": [],
+        }
+        for tres in [real_result, attack_result]:
+            for key in result:
+                result[key].extend(tres[key])
+
+    sample_data_pd = pd.DataFrame(result)
+
     return sample_data_pd
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
+
     def __init__(self):
         self.reset()
 
@@ -138,6 +197,7 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
 
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
@@ -155,6 +215,7 @@ def accuracy(output, target, topk=(1,)):
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
 
+
 def mkdirs(checkpoint_path, best_model_path, logs):
     if not os.path.exists(checkpoint_path):
         os.makedirs(checkpoint_path)
@@ -163,19 +224,21 @@ def mkdirs(checkpoint_path, best_model_path, logs):
     if not os.path.exists(logs):
         os.mkdir(logs)
 
-def time_to_str(t, mode='min'):
-    if mode=='min':
-        t  = int(t)/60
-        hr = t//60
-        min = t%60
-        return '%2d hr %02d min'%(hr,min)
-    elif mode=='sec':
-        t   = int(t)
-        min = t//60
-        sec = t%60
-        return '%2d min %02d sec'%(min,sec)
+
+def time_to_str(t, mode="min"):
+    if mode == "min":
+        t = int(t) / 60
+        hr = t // 60
+        min = t % 60
+        return "%2d hr %02d min" % (hr, min)
+    elif mode == "sec":
+        t = int(t)
+        min = t // 60
+        sec = t % 60
+        return "%2d min %02d sec" % (min, sec)
     else:
         raise NotImplementedError
+
 
 class Logger(object):
     def __init__(self):
@@ -184,10 +247,11 @@ class Logger(object):
 
     def open(self, file, mode=None):
         if mode is None:
-            mode = 'w'
+            mode = "w"
         self.file = open(file, mode)
+
     def write(self, message, is_terminal=1, is_file=1):
-        if '\r' in message:
+        if "\r" in message:
             is_file = 0
         if is_terminal == 1:
             self.terminal.write(message)
@@ -202,21 +266,31 @@ class Logger(object):
         # you might want to specify some extra behavior here.
         pass
 
-def save_checkpoint(save_list, is_best, model, gpus, checkpoint_path, best_model_path, filename='_checkpoint.pth.tar'):
+
+def save_checkpoint(
+    save_list,
+    is_best,
+    model,
+    gpus,
+    checkpoint_path,
+    best_model_path,
+    filename="_checkpoint.pth.tar",
+):
     epoch = save_list[0]
     valid_args = save_list[1]
     best_model_HTER = round(save_list[2], 5)
     best_model_ACC = save_list[3]
     best_model_ACER = save_list[4]
     threshold = save_list[5]
-    if(len(gpus) > 1):
+    if len(gpus) > 1:
         old_state_dict = model.state_dict()
         from collections import OrderedDict
+
         new_state_dict = OrderedDict()
         for k, v in old_state_dict.items():
-            flag = k.find('.module.')
-            if (flag != -1):
-                k = k.replace('.module.', '.')
+            flag = k.find(".module.")
+            if flag != -1:
+                k = k.replace(".module.", ".")
             new_state_dict[k] = v
         state = {
             "epoch": epoch,
@@ -225,7 +299,7 @@ def save_checkpoint(save_list, is_best, model, gpus, checkpoint_path, best_model
             "best_model_EER": best_model_HTER,
             "best_model_ACER": best_model_ACER,
             "best_model_ACC": best_model_ACC,
-            "threshold": threshold
+            "threshold": threshold,
         }
     else:
         state = {
@@ -235,14 +309,15 @@ def save_checkpoint(save_list, is_best, model, gpus, checkpoint_path, best_model
             "best_model_EER": best_model_HTER,
             "best_model_ACER": best_model_ACER,
             "best_model_ACC": best_model_ACC,
-            "threshold": threshold
+            "threshold": threshold,
         }
     filepath = checkpoint_path + filename
     torch.save(state, filepath)
     # just save best model
     if is_best:
         # shutil.copy(filepath, best_model_path + 'model_best_' + str(best_model_HTER) + '_' + str(epoch) + '.pth.tar')
-        shutil.copy(filepath, best_model_path + 'best_model.pth.tar')
+        shutil.copy(filepath, best_model_path + "best_model.pth.tar")
+
 
 def zero_param_grad(params):
     for p in params:

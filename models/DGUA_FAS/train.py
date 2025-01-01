@@ -1,6 +1,5 @@
 import sys
 
-sys.path.append("../../")
 
 import os
 import random
@@ -15,9 +14,9 @@ import torch.nn as nn
 import torch.optim as optim
 from cvnets.models import get_model
 from torch.utils.tensorboard import SummaryWriter
-from util.evaluate import eval
-from util.get_loader import get_dataset
-from util.utils import (
+from utils.evaluate import eval
+from utils.get_loader import get_dataset
+from utils.utils import (
     AverageMeter,
     Logger,
     accuracy,
@@ -68,6 +67,8 @@ def train():
         src2_train_dataloader_real,
         src3_train_dataloader_fake,
         src3_train_dataloader_real,
+        src4_train_dataloader_fake,
+        src4_train_dataloader_real,
         tgt_valid_dataloader,
     ) = get_dataset(
         config.src1_data,
@@ -76,6 +77,8 @@ def train():
         config.src2_train_num_frames,
         config.src3_data,
         config.src3_train_num_frames,
+        config.src4_data,
+        config.src4_train_num_frames,
         config.tgt_data,
         config.tgt_test_num_frames,
         config.batch_size,
@@ -91,13 +94,11 @@ def train():
     loss_classifier = AverageMeter()
     classifer_top1 = AverageMeter()
 
-    opts = get_training_arguments(
-        config_path="./models/DGUA_FAS/configs/mobilevit_s.yaml"
-    )
+    opts = get_training_arguments(config_path="./configs/mobilevit_s.yaml")
     net = get_model(opts).to(device)
     net2 = get_model(opts).to(device)
 
-    state_dict = torch.load("./pretrained_model/mobilevit_s.pt")
+    state_dict = torch.load("./pretrained_models/mobilevit_s.pt")
     del state_dict["classifier.fc.weight"]
     del state_dict["classifier.fc.bias"]
     net.load_state_dict(state_dict, strict=False)
@@ -159,6 +160,8 @@ def train():
     src2_iter_per_epoch_real = len(src2_train_iter_real)
     src3_train_iter_real = iter(src3_train_dataloader_real)
     src3_iter_per_epoch_real = len(src3_train_iter_real)
+    src4_train_iter_real = iter(src4_train_dataloader_real)
+    src4_iter_per_epoch_real = len(src4_train_iter_real)
 
     src1_train_iter_fake = iter(src1_train_dataloader_fake)
     src1_iter_per_epoch_fake = len(src1_train_iter_fake)
@@ -166,6 +169,8 @@ def train():
     src2_iter_per_epoch_fake = len(src2_train_iter_fake)
     src3_train_iter_fake = iter(src3_train_dataloader_fake)
     src3_iter_per_epoch_fake = len(src3_train_iter_fake)
+    src4_train_iter_fake = iter(src4_train_dataloader_fake)
+    src4_iter_per_epoch_fake = len(src4_train_iter_fake)
 
     max_iter = config.max_iter
     epoch = 1
@@ -180,6 +185,8 @@ def train():
             src2_train_iter_real = iter(src2_train_dataloader_real)
         if iter_num % src3_iter_per_epoch_real == 0:
             src3_train_iter_real = iter(src3_train_dataloader_real)
+        if iter_num % src4_iter_per_epoch_real == 0:
+            src4_train_iter_real = iter(src4_train_dataloader_real)
 
         if iter_num % src1_iter_per_epoch_fake == 0:
             src1_train_iter_fake = iter(src1_train_dataloader_fake)
@@ -187,6 +194,8 @@ def train():
             src2_train_iter_fake = iter(src2_train_dataloader_fake)
         if iter_num % src3_iter_per_epoch_fake == 0:
             src3_train_iter_fake = iter(src3_train_dataloader_fake)
+        if iter_num % src4_iter_per_epoch_fake == 0:
+            src4_train_iter_fake = iter(src4_train_dataloader_fake)
 
         if iter_num != 0 and iter_num % iter_per_epoch == 0:
             epoch = epoch + 1
@@ -210,6 +219,10 @@ def train():
         src3_img_real = src3_img_real.cuda()
         src3_label_real = src3_label_real.cuda()
 
+        src4_img_real, src4_label_real = src4_train_iter_real.next()
+        src4_img_real = src4_img_real.cuda()
+        src4_label_real = src4_label_real.cuda()
+
         src1_img_fake, src1_label_fake = src1_train_iter_fake.next()
         src1_img_fake = src1_img_fake.cuda()
         src1_label_fake = src1_label_fake.cuda()
@@ -222,6 +235,10 @@ def train():
         src3_img_fake = src3_img_fake.cuda()
         src3_label_fake = src3_label_fake.cuda()
 
+        src4_img_fake, src4_label_fake = src4_train_iter_fake.next()
+        src4_img_fake = src4_img_fake.cuda()
+        src4_label_fake = src4_label_fake.cuda()
+
         input_data = torch.cat(
             [
                 src1_img_real,
@@ -230,6 +247,8 @@ def train():
                 src2_img_fake,
                 src3_img_real,
                 src3_img_fake,
+                src4_img_real,
+                src4_img_fake,
             ],
             dim=0,
         )
@@ -242,6 +261,8 @@ def train():
                 src2_label_fake,
                 src3_label_real,
                 src3_label_fake,
+                src4_label_real,
+                src4_label_fake,
             ],
             dim=0,
         )

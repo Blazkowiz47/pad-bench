@@ -79,6 +79,15 @@ class Wrapper:
         """
         raise NotImplementedError("")
 
+    @abstractmethod
+    def entire_dataset(self, to_augment: bool) -> List[Any]:
+        """
+        Loops through the given directory.
+        Practically, one should only change this function and get various splits.
+        Returns: List of files to load along with its class label.
+        """
+        raise NotImplementedError("")
+
     def get_split(
         self,
         split: str,
@@ -91,6 +100,26 @@ class Wrapper:
         self.log.debug(f"Generating {split} split for {self.name} dataset.")
         batch_size = batch_size or self.batch_size
         data = self.loop_splitset(split, split == "train")
+        self.log.debug(f"Total files: {len(data)}")
+        return DataLoader(
+            DatasetGenerator(data, self._transform),
+            num_workers=num_workers or self.num_workers,
+            batch_size=batch_size or self.batch_size,
+        )
+
+    @abstractmethod
+    def get(
+        self,
+        augment: bool = False,
+        batch_size: Optional[int] = None,
+        num_workers: Optional[int] = None,
+    ) -> DataLoader:
+        """
+        Generates the given split.
+        """
+        self.log.debug(f"Getting {self.name} dataset.")
+        batch_size = batch_size or self.batch_size
+        data = self.entire_dataset(augment)
         self.log.debug(f"Total files: {len(data)}")
         return DataLoader(
             DatasetGenerator(data, self._transform),

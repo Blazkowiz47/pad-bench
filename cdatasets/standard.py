@@ -23,18 +23,50 @@ class StandardWrapper(Wrapper):
         self.name = "standard"
         self.log = log
         self.kwargs: Dict[str, Any] = kwargs
-        self.rdir = kwargs.get(
-            "rdir", "/cluster/nbl-users/Shreyas-Sushrut-Raghu/3D_PAD_Datasets/iPhone11/"
-        )
+        self.rdir = kwargs.get("rdir", "/home/ubuntu/datasets/test/")
         self.classes = ["attack", "real"]
         self.num_classes = len(self.classes)
         self.attack_type = kwargs.get("attack", "*")
-        self.facedetect = config.get("facedetect", None)
         self.batch_size = config["batch_size"]
         self.num_workers = config["num_workers"]
         self.transform = kwargs.get("transform", None)
         self.include_path = kwargs.get("include_path", False)
         self.log.debug(f"Attack: {self.attack_type}")
+
+    def entire_dataset(self, to_augment: bool) -> List[Any]:
+        self.log.debug(f"Looping through: {self.rdir}")
+        data: List[Any] = []
+        attack_dir = os.path.join(
+            self.rdir,
+            "attack",
+        )
+        real_dir = os.path.join(
+            self.rdir,
+            "real",
+        )
+
+        datapoints = [
+            str(file)
+            for file in Path(attack_dir).rglob("*")
+            if file.suffix.lower() in image_extensions
+        ]
+
+        for point in datapoints:
+            data.append((point, 1, to_augment))
+        self.log.debug(f"Loaded attack files: {len(datapoints)}")
+        self.log.debug(f"From: {attack_dir}")
+
+        datapoints = [
+            str(file)
+            for file in Path(real_dir).rglob("*")
+            if file.suffix.lower() in image_extensions
+        ]
+
+        self.log.debug(f"Loaded real files: {len(datapoints)}")
+        self.log.debug(f"From: {real_dir}")
+        for point in datapoints:
+            data.append((point, 0, to_augment))
+        return data
 
     def loop_splitset(self, ssplit: str, to_augment: bool) -> List[Any]:
         self.log.debug(f"Looping through: {self.rdir}")
@@ -50,15 +82,10 @@ class StandardWrapper(Wrapper):
             "real",
             ssplit,
         )
-        if self.facedetect:
-            if os.path.isdir(os.path.join(attack_dir, self.facedetect)):
-                attack_dir = os.path.join(attack_dir, self.facedetect)
-            if os.path.isdir(os.path.join(real_dir, self.facedetect)):
-                real_dir = os.path.join(real_dir, self.facedetect)
 
         datapoints = [
             str(file)
-            for file in Path(attack_dir).glob("*")
+            for file in Path(attack_dir).rglob("*")
             if file.suffix.lower() in image_extensions
         ]
 
@@ -101,9 +128,9 @@ class StandardWrapper(Wrapper):
 
         if isinstance(imgarray, tuple):
             if self.include_path:
-                return *imgarray, torch.tensor(label).float(), fname
+                return (*imgarray, torch.tensor(label).float(), fname)
             else:
-                return *imgarray, torch.tensor(label).float()
+                return (*imgarray, torch.tensor(label).float())
 
         if not isinstance(imgarray, torch.Tensor):
             imgarray = torch.tensor(imgarray)
