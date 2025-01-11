@@ -15,9 +15,9 @@ import torch.nn as nn
 import torch.optim as optim
 from cvnets.models import get_model
 from torch.utils.tensorboard import SummaryWriter
-from util.evaluate import eval
-from util.get_loader import get_dataset
-from util.utils import (
+from utils.evaluate import eval
+from utils.get_loader import get_dataset
+from utils.utils import (
     AverageMeter,
     Logger,
     accuracy,
@@ -68,6 +68,10 @@ def train():
         src2_train_dataloader_real,
         src3_train_dataloader_fake,
         src3_train_dataloader_real,
+        src4_train_dataloader_fake,
+        src4_train_dataloader_real,
+        src5_train_dataloader_fake,
+        src5_train_dataloader_real,
         tgt_valid_dataloader,
     ) = get_dataset(
         config.src1_data,
@@ -76,6 +80,10 @@ def train():
         config.src2_train_num_frames,
         config.src3_data,
         config.src3_train_num_frames,
+        config.src4_data,
+        config.src4_train_num_frames,
+        config.src5_data,
+        config.src5_train_num_frames,
         config.tgt_data,
         config.tgt_test_num_frames,
         config.batch_size,
@@ -159,6 +167,10 @@ def train():
     src2_iter_per_epoch_real = len(src2_train_iter_real)
     src3_train_iter_real = iter(src3_train_dataloader_real)
     src3_iter_per_epoch_real = len(src3_train_iter_real)
+    src4_train_iter_real = iter(src4_train_dataloader_real)
+    src4_iter_per_epoch_real = len(src4_train_iter_real)
+    src5_train_iter_real = iter(src5_train_dataloader_real)
+    src5_iter_per_epoch_real = len(src5_train_iter_real)
 
     src1_train_iter_fake = iter(src1_train_dataloader_fake)
     src1_iter_per_epoch_fake = len(src1_train_iter_fake)
