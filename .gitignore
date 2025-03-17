@@ -2,3 +2,4 @@
 pretrained_models/*
 logs/*
 tmp/*
+results/*
