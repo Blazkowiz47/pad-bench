@@ -10,8 +10,6 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 
-image_extensions: List[str] = [".jpg", ".png", ".jpeg"]
-video_extensions: List[str] = [".mov", ".mp4"]
 
 
 def set_seeds(log: Logger, seed: int = 2024):

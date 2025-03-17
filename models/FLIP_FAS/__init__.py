@@ -8,7 +8,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from .fas import flip_mcl
+try:
+    from .fas import flip_mcl
+except ImportError:
+    from fas import flip_mcl
 
 
 def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:

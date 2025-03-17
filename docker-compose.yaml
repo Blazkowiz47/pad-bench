@@ -1,11 +1,65 @@
-version: '3'
-
 services:
+  cf_fas:
+    container_name: cf_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    build:
+      dockerfile: models/CF_FAS/Dockerfile
+    volumes:
+      - ./models/CF_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
   dgua_fas:
+    container_name: dgua_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
     build:
       dockerfile: models/DGUA_FAS/Dockerfile
     volumes:
-      - .:/usr/src/code
+      - ./models/DGUA_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+  flip_fas:
+    container_name: flip_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    build:
+      dockerfile: models/FLIP_FAS/Dockerfile
+    volumes:
+      - ./models/FLIP_FAS:/root/code:rw
+      - /mnt/cluster:/mnt/cluster:rw
+      - ./pretrained_models:/root/pretrained_models:rw
+      - /home/ubuntu/datasets:/root/datasets:rw
+
     deploy:
       resources:
         reservations:
@@ -18,10 +72,18 @@ services:
                 - compute
 
   gacd_fas:
+    container_name: gacd_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
     build:
       dockerfile: models/GACD_FAS/Dockerfile
     volumes:
-      - .:/usr/src/code
+      - ./models/GACD_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
     deploy:
       resources:
         reservations:
@@ -32,3 +94,53 @@ services:
                 - gpu
                 - utility
                 - compute
+
+  jpd_fas:
+    container_name: jpd_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    build:
+      dockerfile: models/JPD_FAS/Dockerfile
+    volumes:
+      - ./models/JPD_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+  lmfd_fas:
+    container_name: lmfd_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    build:
+      dockerfile: models/LMFD_FAS/Dockerfile
+    volumes:
+      - ./models/LMFD_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+

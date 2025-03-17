@@ -1,18 +1,18 @@
-import os
-import sys
-import random
-import math
+from collections import OrderedDict
+
 import numpy as np
+import timm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import timm
-
-from . import clip
-from . import third_party
-from .prompt_templates import spoof_templates, real_templates
-from collections import OrderedDict
+try:
+    from . import clip, third_party
+    from .prompt_templates import real_templates, spoof_templates
+except ImportError:
+    import clip
+    import third_party
+    from prompt_templates import real_templates, spoof_templates
 
 
 def l2_norm(input, axis=1):

@@ -1,12 +1,10 @@
 from logging import Logger
 from typing import Any, Dict, List, Optional
 
-import albumentations
-from albumentations.pytorch import ToTensorV2
 import numpy as np
 import torch
 import torch.nn.functional as F
-import torchvision.transforms as T
+import torchvision.transforms as A
 from PIL import Image
 from torch.nn import Module
 from torch.utils.data import DataLoader
@@ -56,17 +54,17 @@ def get_scores(
 
 
 def transform_image(fname: str) -> torch.Tensor:
-    transform = albumentations.Compose(
+    transform = A.Compose(
         [
-            albumentations.SmallestMaxSize(max_size=256),
-            albumentations.CenterCrop(height=224, width=224),
-            albumentations.Normalize(PRE_MEAN, PRE_STD),
-            ToTensorV2(),
+            A.ToTensor(),
+            A.Resize((256, 256)),
+            A.CenterCrop((224, 224)),
+            A.Normalize(mean=PRE_MEAN, std=PRE_STD),
         ]
     )
 
     img = Image.open(fname)
-    img = transform(image=np.array(img))["image"]
+    img = transform(np.array(img))
 
     return img
 

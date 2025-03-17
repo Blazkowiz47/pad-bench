@@ -11,8 +11,10 @@ from torch.optim import Optimizer
 from torchvision import transforms as T
 from tqdm import tqdm
 
-
-from .option import get_training_arguments
+try:
+    from .option import get_training_arguments
+except ImportError:
+    from option import get_training_arguments
 
 
 def finetune_epoch(
@@ -42,7 +44,9 @@ def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
     log.debug(f"Provided config: {config}")
 
     opts = get_training_arguments(
-        config_path="./models/DGUA_FAS/configs/mobilevit_s.yaml"
+        config_path=config.get(
+            "config_path", "./models/DGUA_FAS/configs/mobilevit_s.yaml"
+        )
     )
     net = cvnets.get_model(opts)
 
@@ -51,7 +55,7 @@ def get_model(config: Dict[str, Any], log: Logger, **kwargs) -> Module:
 
     log.debug("Initialised DGUA_FAS Model")
     if kwargs.get("path", ""):
-        net_ = torch.load(kwargs["path"])
+        net_ = torch.load(kwargs["path"], weights_only=False)
         net.load_state_dict(net_["state_dict"])
         log.debug("Loaded weights of DGUA_FAS Model")
 

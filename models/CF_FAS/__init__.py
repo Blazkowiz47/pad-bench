@@ -1,9 +1,7 @@
 from logging import Logger
 from typing import Any, Dict, List, Optional
 
-import albumentations
-from albumentations.pytorch import ToTensorV2
-import numpy as np
+import torchvision.transforms as transforms
 import torch
 from torch.nn import DataParallel
 from PIL import Image
@@ -54,16 +52,16 @@ def get_scores(
 
 def transform_image(fname: str) -> torch.Tensor:
     input_shape = (224, 224)
-    transform = albumentations.Compose(
+    transform = transforms.Compose(
         [
-            albumentations.Resize(height=input_shape[0], width=input_shape[1]),
-            albumentations.Normalize(PRE_MEAN, PRE_STD, always_apply=True),
-            ToTensorV2(),
+            transforms.ToTensor(),
+            transforms.Resize(input_shape),
+            transforms.Normalize(mean=PRE_MEAN, std=PRE_STD),
         ]
     )
 
     img = Image.open(fname)
-    img = transform(image=np.array(img))["image"]
+    img = transform(img)
 
     return img
 

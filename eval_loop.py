@@ -1,43 +1,46 @@
+import json
 import os
+from os.path import join as pjoin
 import re
-from glob import glob
 import subprocess
-from multiprocessing import Pool
-from typing import List
-from util import SOTA
+from glob import glob
+from typing import Dict, List
+from matplotlib import pyplot as plt
+from util import SOTA, image_extensions
+import numpy as np
 
 BATCH_SIZE = 64
 MODELS_CHECKPOINTS = {
-    #     SOTA.CF_FAS: {
-    #         "icmo": "./pretrained_models/CF_FAS/icmo.pth",
-    #         "oimc": "./pretrained_models/CF_FAS/omic.pth",
-    #         "ocim": "./pretrained_models/CF_FAS/ocim.pth",
-    #         "ocmi": "./pretrained_models/CF_FAS/ocmi.pth",
-    #     },
-    #     SOTA.LMFD_FAS: {
-    #         "icmo": "./pretrained_models/LMFD_FAS/icm_o.pth",
-    #         "oimc": "./pretrained_models/LMFD_FAS/omi_c.pth",
-    #         "ocim": "./pretrained_models/LMFD_FAS/oci_m.pth",
-    #         "ocmi": "./pretrained_models/LMFD_FAS/ocm_i.pth",
-    #     },
-    #     SOTA.JPD_FAS: {"all": "./pretrained_models/JPD_FAS/full_resnet50.pth"},
-    #     SOTA.GACD_FAS: {
-    #         "icmo": "./pretrained_models/GACD_FAS/resnet18_pICM2O_best.pth",
-    #         "oimc": "./pretrained_models/GACD_FAS/resnet18_pOMI2C_best.pth",
-    #         "ocim": "./pretrained_models/GACD_FAS/resnet18_pOCI2M_best.pth",
-    #         "ocmi": "./pretrained_models/GACD_FAS/resnet18_pOCM2I_best.pth",
-    #     },
-    #     SOTA.DGUA_FAS: {
-    #         "icmo": "./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar",
-    #         "oimc": "./pretrained_models/DGUA_FAS/O&I&MtoC/best_model.pth.tar",
-    #         "ocim": "./pretrained_models/DGUA_FAS/O&C&ItoM/best_model.pth.tar",
-    #         "ocmi": "./pretrained_models/DGUA_FAS/O&C&MtoI/best_model.pth.tar",
-    #     },
+    SOTA.CF_FAS: {
+        "icmo": "/root/pretrained_models/CF_FAS/icmo.pth",
+        "oimc": "/root/pretrained_models/CF_FAS/omic.pth",
+        "ocim": "/root/pretrained_models/CF_FAS/ocim.pth",
+        "ocmi": "/root/pretrained_models/CF_FAS/ocmi.pth",
+    },
+    SOTA.LMFD_FAS: {
+        "icmo": "/root/pretrained_models/LMFD_FAS/icm_o.pth",
+        "oimc": "/root/pretrained_models/LMFD_FAS/omi_c.pth",
+        "ocim": "/root/pretrained_models/LMFD_FAS/oci_m.pth",
+        "ocmi": "/root/pretrained_models/LMFD_FAS/ocm_i.pth",
+    },
+    SOTA.GACD_FAS: {
+        "icmo": "/root/pretrained_models/GACD_FAS/resnet18_pICM2O_best.pth",
+        "oimc": "/root/pretrained_models/GACD_FAS/resnet18_pOMI2C_best.pth",
+        "ocim": "/root/pretrained_models/GACD_FAS/resnet18_pOCI2M_best.pth",
+        "ocmi": "/root/pretrained_models/GACD_FAS/resnet18_pOCM2I_best.pth",
+    },
+    SOTA.JPD_FAS: {"all": "/root/pretrained_models/JPD_FAS/full_resnet50.pth"},
+    SOTA.DGUA_FAS: {
+        "icmo": "/root/pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar",
+        "oimc": "/root/pretrained_models/DGUA_FAS/O&I&MtoC/best_model.pth.tar",
+        "ocim": "/root/pretrained_models/DGUA_FAS/O&C&ItoM/best_model.pth.tar",
+        "ocmi": "/root/pretrained_models/DGUA_FAS/O&C&MtoI/best_model.pth.tar",
+    },
     SOTA.FLIP_FAS: {
-        "icmo": "./pretrained_models/FLIP_FAS/oulu_flip_mcl.pth.tar",
-        "oimc": "./pretrained_models/FLIP_FAS/casia_flip_mcl.pth.tar",
-        "ocim": "./pretrained_models/FLIP_FAS/msu_flip_mcl.pth.tar",
-        "ocmi": "./pretrained_models/FLIP_FAS/replay_flip_mcl.pth.tar",
+        "icmo": "/root/pretrained_models/FLIP_FAS/oulu_flip_mcl.pth.tar",
+        "oimc": "/root/pretrained_models/FLIP_FAS/casia_flip_mcl.pth.tar",
+        "ocim": "/root/pretrained_models/FLIP_FAS/msu_flip_mcl.pth.tar",
+        "ocmi": "/root/pretrained_models/FLIP_FAS/replay_flip_mcl.pth.tar",
     },
 }
 
@@ -121,14 +124,95 @@ def call_proc(call: str) -> None:
     )
 
 
-def eval_loop() -> None:
-    """
-    model: model name
-    attacK: default = '*', otherwise mention attack name
-    ckpt: checkpoint path
-    edir: evaluation directory path
-    rdir: dataset root directory path
-    """
+def get_files(rdir: str) -> List[str]:
+    result_files = []
+    for root, _, files in os.walk(rdir):
+        for file in files:
+            if "." + file.split(".")[-1].lower() in image_extensions:
+                fname = os.path.join(root, file)
+                fname = fname.replace("/home/ubuntu", "/root")
+                result_files.append(fname)
+
+    return result_files
+
+
+def get_files_for_idiap() -> Dict[str, List[str]]:
+    rdir = "/home/ubuntu/datasets/test/idiap/"
+    results: Dict[str, List[str]] = {}
+    for version in ["v1", "v2"]:
+        dir = pjoin(rdir, "real", version)
+        results["real_" + version] = get_files(dir)
+
+        for attack in ["display", "print"]:
+            dir = pjoin(rdir, "attack", attack, version)
+            results[attack + "_" + version] = get_files(dir)
+
+    return results
+
+
+def get_files_for_nexdata() -> Dict[str, List[str]]:
+    rdir = "/home/ubuntu/datasets/test/nexdata"
+    results: Dict[str, List[str]] = {}
+    results["real"] = get_files(pjoin(rdir, "real"))
+    for attack in [
+        "display_ipad",
+        "display_mobilephone",
+        "print_paper_mask",
+        "print_paper_photo",
+    ]:
+        dir = pjoin(rdir, "attack", attack)
+        results[attack] = get_files(dir)
+
+    return results
+
+
+def get_files_for_hda() -> Dict[str, List[str]]:
+    rdir = "/home/ubuntu/datasets/test/hda_flicker/attack/"
+    results: Dict[str, List[str]] = {}
+    results["real"] = get_files("/home/ubuntu/datasets/test/hda_flicker/real")
+    for attack in os.listdir(rdir):
+        dir = pjoin(rdir, attack)
+        if os.path.isdir(dir):
+            results[attack] = get_files(dir)
+
+    return results
+
+
+def get_files_for_trainingpro2() -> Dict[str, List[str]]:
+    rdir = "/home/ubuntu/datasets/test/trainingProiBeta2"
+    results: Dict[str, List[str]] = {}
+    results["real"] = get_files(pjoin(rdir, "real"))
+    for attack in ["latex", "silicon", "wrap"]:
+        dir = pjoin(rdir, "attack", attack)
+        results[attack] = get_files(dir)
+
+    return results
+
+
+def retrieve_result(
+    files: List[str],
+    container_name: str,
+    ckpt: str,
+    temp_fname: str = "tmp_input.json",
+) -> List[float]:
+    temp_input = "input_" + temp_fname
+    temp_output = "output_" + temp_fname
+
+    with open(pjoin(f"./models/{container_name.upper()}/{temp_input}"), "w+") as fp:
+        json.dump({"files": files}, fp)
+
+    call_proc(
+        f"docker exec {container_name} python /root/code/inference.py -i {temp_input} -o {temp_output} -ckpt {ckpt}"
+    )
+
+    with open(pjoin(f"./models/{container_name.upper()}/{temp_output}"), "r") as fp:
+        output = json.load(fp)
+    os.remove(pjoin(f"./models/{container_name.upper()}/{temp_input}"))
+    os.remove(pjoin(f"./models/{container_name.upper()}/{temp_output}"))
+    return output["result"]
+
+
+def eval_all_indian_pads() -> None:
     for sota in MODELS_CHECKPOINTS:
         for protocol, ckpt in MODELS_CHECKPOINTS[sota].items():
             for dname in [
@@ -165,5 +249,153 @@ def eval_loop() -> None:
                 )
 
 
+def eval_and_store_results(
+    files_map: Dict[str, List[str]],
+    dataset: str,
+    result: Dict[SOTA, Dict[str, Dict[str, Dict[str, Dict[str, List[float]]]]]],
+) -> None:
+    for sota in MODELS_CHECKPOINTS:
+        if sota != SOTA.FLIP_FAS:
+            continue
+        if sota not in result:
+            result[sota] = {}
+        for protocol, ckpt in MODELS_CHECKPOINTS[sota].items():
+            if protocol not in result[sota]:
+                result[sota][protocol] = {}
+            if dataset not in result[sota][protocol]:
+                result[sota][protocol][dataset] = {}
+            os.makedirs(
+                f"./results/{dataset}/{sota.value.lower()}/{protocol}", exist_ok=True
+            )
+            for exp, files in files_map.items():
+                if dataset + "_" + exp not in result[sota][protocol]:
+                    result[sota][protocol][dataset][exp] = {"real": [], "attack": []}
+                if os.path.isfile(
+                    f"./results/{dataset}/{sota.value.lower()}/{protocol}/{exp}.json"
+                ):
+                    with open(
+                        f"./results/{dataset}/{sota.value.lower()}/{protocol}/{exp}.json",
+                        "r",
+                    ) as fp:
+                        scores = json.load(fp)
+                    if "result" in scores:
+                        scores = scores["result"]
+
+                else:
+                    scores = retrieve_result(
+                        files, sota.value.lower(), ckpt, exp + ".json"
+                    )
+                    print("Done:", exp)
+                    with open(
+                        f"./results/{dataset}/{sota.value.lower()}/{protocol}/{exp}.json",
+                        "w+",
+                    ) as fp:
+                        json.dump({"result": scores}, fp)
+
+                if "real" in exp:
+                    result[sota][protocol][dataset][exp]["real"].extend(scores)
+                else:
+                    result[sota][protocol][dataset][exp]["attack"].extend(scores)
+
+
+def plot_det_curve(
+    genuine: np.ndarray, impostor: np.ndarray, fname: str, bins: int = 10_001
+):
+    # print(genuine.shape, impostor.shape)
+    mi = min(np.min(impostor), np.min(genuine))
+    mx = max(np.max(impostor), np.max(genuine))
+
+    # Following 3 lines are optional
+    # Normalize the scores
+    # impostor = (impostor - mi) / (mx - mi)
+    # genuine = (genuine - mi) / (mx - mi)
+    thresholds = np.linspace(0, 1, bins)
+
+    far = np.zeros(bins)
+    frr = np.zeros(bins)
+    for i, threshold in enumerate(thresholds):
+        far[i] = np.sum(impostor >= threshold) * 100 / len(impostor)
+        frr[i] = np.sum(genuine < threshold) * 100 / len(genuine)
+
+    plt.figure()
+    plt.plot(far, frr)
+    plt.yscale("log")
+    plt.xscale("log")
+    plt.xlabel("FAR")
+    plt.ylabel("FRR")
+    plt.title("DET Curve")
+    plt.savefig(fname)
+    plt.close()
+
+
 if __name__ == "__main__":
-    eval_loop()
+    result: Dict[SOTA, Dict[str, Dict[str, Dict[str, Dict[str, List[float]]]]]] = {}
+
+    # idiap:
+    files_map = get_files_for_idiap()
+    dataset = "idiap"
+    eval_and_store_results(files_map, dataset, result)
+
+    # HDA
+    files_map = get_files_for_hda()
+    dataset = "hda"
+    eval_and_store_results(files_map, dataset, result)
+
+    # nexdata
+    files_map = get_files_for_nexdata()
+    dataset = "nexdata"
+    eval_and_store_results(files_map, dataset, result)
+
+    # ibeta
+    files_map = get_files_for_trainingpro2()
+    dataset = "trainingproibeta2"
+    eval_and_store_results(files_map, dataset, result)
+
+    for sota in MODELS_CHECKPOINTS:
+        if sota != SOTA.FLIP_FAS:
+            continue
+        for protocol, ckpt in MODELS_CHECKPOINTS[sota].items():
+            os.makedirs(f"./results/det_{sota.value.lower()}/{protocol}", exist_ok=True)
+            for dataset in result[sota][protocol]:
+                exp_scores = result[sota][protocol][dataset]
+                os.makedirs(
+                    f"./results/det_{sota.value.lower()}/{protocol}/{dataset}",
+                    exist_ok=True,
+                )
+                if dataset == "idiap":
+                    real_scores = np.array(exp_scores["real_v1"]["real"])
+                    for attack in exp_scores:
+                        if "real" in attack or "v2" in attack:
+                            continue
+                        print("idiap v1", attack)
+                        attack_scores = np.array(exp_scores[attack]["attack"])
+                        plot_det_curve(
+                            real_scores,
+                            attack_scores,
+                            f"./results/det_{sota.value.lower()}/{protocol}/{dataset}/v1_{attack}_det.png",
+                        )
+
+                    real_scores = np.array(exp_scores["real_v2"]["real"])
+                    for attack in exp_scores:
+                        if "real" in attack or "v1" in attack:
+                            continue
+                        attack_scores = np.array(exp_scores[attack]["attack"])
+                        print("idiap v2", attack)
+                        plot_det_curve(
+                            real_scores,
+                            attack_scores,
+                            f"./results/det_{sota.value.lower()}/{protocol}/{dataset}/v2_{attack}_det.png",
+                        )
+
+                else:
+                    real_scores = np.array(exp_scores["real"]["real"])
+                    for attack in exp_scores:
+                        if "real" in attack:
+                            continue
+                        print(dataset, attack)
+                        attack_scores = np.array(exp_scores[attack]["attack"])
+                        plot_det_curve(
+                            real_scores,
+                            attack_scores,
+                            f"./results/det_{sota.value.lower()}/{protocol}/{dataset}/{attack}_det.png",
+                        )
