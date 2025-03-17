@@ -79,3 +79,4 @@ dependencies:
       - tqdm==4.64.1
       - yacs==0.1.8
       - zipp==3.6.0
+prefix: /home/ubuntu/miniconda3/envs/gacdfas
