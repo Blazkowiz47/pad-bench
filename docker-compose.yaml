@@ -1,11 +1,68 @@
-version: '3'
-
 services:
-  dgua_fas:
+  cf_fas:
+    container_name: cf_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    shm_size: '20gb'
     build:
-      dockerfile: models/DGUA_FAS/Dockerfile
+      dockerfile: sotas/CF_FAS/Dockerfile
     volumes:
-      - .:/usr/src/code
+      - ./sotas/CF_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+  dgua_fas:
+    container_name: dgua_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    shm_size: '20gb'
+    build:
+      dockerfile: sotas/DGUA_FAS/Dockerfile
+    volumes:
+      - ./sotas/DGUA_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+  flip_fas:
+    container_name: flip_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    shm_size: '20gb'
+    build:
+      dockerfile: sotas/FLIP_FAS/Dockerfile
+    volumes:
+      - ./sotas/FLIP_FAS:/root/code:rw
+      - /mnt/cluster:/mnt/cluster:rw
+      - ./pretrained_models:/root/pretrained_models:rw
+      - /home/ubuntu/datasets:/root/datasets:rw
+
     deploy:
       resources:
         reservations:
@@ -18,10 +75,93 @@ services:
                 - compute
 
   gacd_fas:
+    container_name: gacd_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    shm_size: '20gb'
     build:
-      dockerfile: models/GACD_FAS/Dockerfile
+      dockerfile: sotas/GACD_FAS/Dockerfile
     volumes:
-      - .:/usr/src/code
+      - ./sotas/GACD_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+  jpd_fas:
+    container_name: jpd_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    shm_size: '20gb'
+    build:
+      dockerfile: sotas/JPD_FAS/Dockerfile
+    volumes:
+      - ./sotas/JPD_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+
+  lmfd_fas:
+    container_name: lmfd_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    shm_size: '20gb'
+    build:
+      dockerfile: sotas/LMFD_FAS/Dockerfile
+    volumes:
+      - ./sotas/LMFD_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - utility
+                - compute
+  iadg_fas:
+    container_name: iadg_fas
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    shm_size: '20gb'
+    build:
+      dockerfile: sotas/IADG_FAS/Dockerfile
+    volumes:
+      - ./sotas/IADG_FAS:/root/code
+      - /mnt/cluster:/mnt/cluster
+      - ./pretrained_models:/root/pretrained_models
+      - /home/ubuntu/datasets:/root/datasets
+
     deploy:
       resources:
         reservations:

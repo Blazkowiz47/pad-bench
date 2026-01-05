@@ -2,3 +2,7 @@
 pretrained_models/*
 logs/*
 tmp/*
+avatar_experiments/*
+*.json
+*.png
+*.pt

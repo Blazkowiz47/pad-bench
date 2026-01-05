@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Any, List, Tuple, Union
 
 import numpy as np
 
@@ -8,7 +8,7 @@ def calculate_eer(
     imposter: List[Union[float, int]],
     bins: int = 10_001,
     reverse: bool = False,
-) -> float:
+) -> Tuple[float, Any, Any, Any]:
     """
 
     Calculates Equal Error Rate (eer).
@@ -42,6 +42,9 @@ def calculate_eer(
         Equal Error Rate (eer) calculated from given genuine and imposter
 
         scores.
+    far: array
+    frr: array
+    thresholds: array
 
     Example
 
@@ -97,4 +100,4 @@ def calculate_eer(
 
     eer = (far[di] + frr[di]) / 2
 
-    return eer
+    return eer, far, frr, thresholds

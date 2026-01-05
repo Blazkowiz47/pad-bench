@@ -1,5 +1,12 @@
 ### Install Instructions
 
+Docker is preferred:
+```
+    docker compose up -d
+```
+
+If using conda:
+
 ```
 ln -s /mnt/cluster/nbl-users/Shreyas-Sushrut-Raghu/pad-bench/pretrained_models /home/ubuntu/pad-bench/pretrained_models
 conda activate base
@@ -49,7 +56,7 @@ cd ../..
 conda clean -a -y
 ```
 
-### Test all the models: 
+### Test all the models:
 
 ```
 conda activate dguafas
@@ -69,14 +76,14 @@ python test_model.py --model-name=FLIP_FAS --path="./pretrained_models/FLIP_FAS/
 conda deactivate
 ```
 
-### Get real and attack scores: 
+### Get real and attack scores:
 
-General format: 
+General format:
 ```
 python -m DGUA_FAS --rdir="/path/to/dataset/" -ckpt "/path/to/pretrained/models" -edir "/path/to/director/to/store/scores/"
 ```
 
-Example: 
+Example:
 ```
 python evaluation.py -m DGUA_FAS --rdir="/cluster/nbl-users/Shreyas-Sushrut-Raghu/PAD_Survillance_DB/J7_NG/" \
 -ckpt "./pretrained_models/DGUA_FAS/I&C&MtoO/best_model.pth.tar" -edir "./tmp/DGUA_FAS/pad_surveillance/j7ng"
