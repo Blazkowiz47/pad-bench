@@ -1,7 +1,7 @@
 import time
 import torch
 from torch.utils.data import DataLoader
-from models import get_model, get_score_function, get_transform_function
+from sotas import get_model, get_score_function, get_transform_function
 from util import SOTA, DatasetGenerator
 from eval_loop import MODELS_CHECKPOINTS
 
