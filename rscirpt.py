@@ -10,7 +10,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # Constants for protocols and datasets
 PROTOCOLS = ["icmo", "oimc", "ocim", "ocmi"]
-DATASETS = ["Oulu", "Casia_fasd", "Msu_mfsd", "Idiap", "IphoneIndia"]
+DATASETS = ["Oulu", "Casia_fasd", "Msu_mfsd", "Idiap", "IphoneIndia", "Rose_youtu"]
 
 
 def get_err_threhold(fpr, tpr, threshold):
@@ -189,7 +189,7 @@ def print_model_matrix(sota, protocols, datasets):
             if (
                 protocol != "all"
                 and protocol[-1].lower() != dataset[0].lower()
-                and dataset != "IphoneIndia"
+                and dataset not in ["IphoneIndia", "Rose_youtu"]
             ):
                 eer_values.append(-1)
                 continue

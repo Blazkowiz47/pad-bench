@@ -26,8 +26,7 @@ try:
 except ImportError:
     from fas import flip_mcl
 
-BATCH_SIZE = 64
-USE_FACE_DETECTOR = False
+BATCH_SIZE = 128
 
 
 def get_model(**kwargs) -> Module:

@@ -23,7 +23,6 @@ except RuntimeError:
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 BATCH_SIZE = 128
-USE_FACE_DETECTOR = False
 PRE_STD = [0.229, 0.224, 0.225]
 PRE_MEAN = [0.485, 0.456, 0.406]
 

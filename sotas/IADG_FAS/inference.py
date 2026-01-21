@@ -25,7 +25,6 @@ except ImportError:
     from models import Framework
 
 BATCH_SIZE = 32
-USE_FACE_DETECTOR = False
 PRE_MEAN = [0.5, 0.5, 0.5]
 PRE_STD = [0.5, 0.5, 0.5]
 

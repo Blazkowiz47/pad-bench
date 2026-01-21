@@ -28,7 +28,6 @@ except ImportError:
     from option import get_training_arguments
 
 BATCH_SIZE = 64
-USE_FACE_DETECTOR = False
 
 
 class DatasetGenerator(Dataset):
@@ -83,9 +82,7 @@ def get_features(model, input):
     return x
 
 
-def get_scores(
-    files: List[str], model: Module, position=0
-) -> List[float]:
+def get_scores(files: List[str], model: Module, position=0) -> List[float]:
     result: List[float] = []
     model.eval()
     model.cuda()

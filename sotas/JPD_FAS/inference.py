@@ -17,15 +17,6 @@ from torch.multiprocessing import set_start_method
 from torchvision import transforms as T
 from tqdm import tqdm
 
-try:
-    from facenet_pytorch import MTCNN
-except ImportError:
-    MTCNN = None
-
-# try:
-#     set_start_method("spawn", force=True)
-# except RuntimeError:
-#     pass
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 try:
@@ -33,8 +24,7 @@ try:
 except ImportError:
     from nets import get_model as models, load_pretrain
 
-BATCH_SIZE = 64
-USE_FACE_DETECTOR = False
+BATCH_SIZE = 128
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-ckpt", "--checkpoint", type=str, required=True)
@@ -116,7 +106,6 @@ class DatasetGenerator(Dataset):
     def __getitem__(self, index) -> Any:
         datapoint = self.data[index]
         return self.transform_image(datapoint)
-
 
 
 def collate_fn(batch):

@@ -25,7 +25,6 @@ except ImportError:
     from model.mfad import FAD_HAM_Net
 
 BATCH_SIZE = 64
-USE_FACE_DETECTOR = False
 
 
 def get_model(**kwargs) -> Module:
